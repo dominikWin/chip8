@@ -229,6 +229,45 @@ impl Opcode {
             Opcode::RLOAD(ref x) => format!("RLOAD {}", x),
         }
     }
+
+    pub fn to_bin(&self) -> u16 {
+        match *self {
+            Opcode::CLS => 0x00e0,
+            Opcode::RET => 0x00ee,
+            Opcode::JMP(ref n) => 0x1000 | *n as u16,
+            Opcode::CALL(ref n) => 0x2000 | *n as u16,
+            Opcode::SKIPEQ(ref x, ref n) => 0x3000 | ((x.v as u16) << 8) as u16 | *n as u16,
+            Opcode::SKIPNEQ(ref x, ref n) => 0x4000 | ((x.v as u16) << 8) as u16 | *n as u16,
+            Opcode::SKIPREQ(ref x, ref y) => 0x5000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::MOV(ref x, ref n) => 0x6000 | ((x.v as u16) << 8) as u16 | *n as u16,
+            Opcode::ADD(ref x, ref n) => 0x7000 | ((x.v as u16) << 8) as u16 | *n as u16,
+            Opcode::MOVR(ref x, ref y) => 0x8000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::OR(ref x, ref y) => 0x8001 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::AND(ref x, ref y) => 0x8002 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::XOR(ref x, ref y) => 0x8003 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::ADDR(ref x, ref y) => 0x8004 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SUBR(ref x, ref y) => 0x8005 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SR(ref x, ref y) => 0x8006 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::RSUB(ref x, ref y) => 0x8007 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SL(ref x, ref y) => 0x800e | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SKIPRNEQ(ref x, ref y) => 0x9000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SI(ref n) => 0xa000 | *n as u16,
+            Opcode::PCN(ref n) => 0xb000 | *n as u16,
+            Opcode::RAND(ref x, ref n) => 0xc000 | ((x.v as u16) << 8) as u16 | *n as u16,
+            Opcode::DRAW(ref x, ref y, ref n) => 0xd000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16 | *n as u16,
+            Opcode::SKIPKEQ(ref x) => 0xe09e | ((x.v as u16) << 8) as u16,
+            Opcode::SKIPKNEQ(ref x) => 0xe0a1 | ((x.v as u16) << 8) as u16,
+            Opcode::GDELAY(ref x) => 0xf007 | ((x.v as u16) << 8) as u16,
+            Opcode::GKEY(ref x) => 0xf00a | ((x.v as u16) << 8) as u16,
+            Opcode::SDELAY(ref x) => 0xf015 | ((x.v as u16) << 8) as u16,
+            Opcode::SSND(ref x) => 0xf018 | ((x.v as u16) << 8) as u16,
+            Opcode::ADDI(ref x) => 0xf01e | ((x.v as u16) << 8) as u16,
+            Opcode::SPRITE(ref x) => 0xf029 | ((x.v as u16) << 8) as u16,
+            Opcode::BCD(ref x) => 0xf033 | ((x.v as u16) << 8) as u16,
+            Opcode::RDUMP(ref x) => 0xf055 | ((x.v as u16) << 8) as u16,
+            Opcode::RLOAD(ref x) => 0xf065 | ((x.v as u16) << 8) as u16,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -808,5 +847,14 @@ mod tests {
             "RLOAD VC".to_string(),
             Opcode::new(0xfc65).unwrap().to_asm()
         );
+    }
+
+    #[test]
+    fn test_to_bin() {
+        for i in 0x0000 .. 0xffff {
+            if let Some(opc) = Opcode::new(i) {
+                assert_eq!(i, opc.to_bin());
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@ use std::fmt;
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct VReg {
-    v: u8,
+    pub v: u8,
 }
 
 impl fmt::Display for VReg {
