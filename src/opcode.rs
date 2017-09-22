@@ -152,44 +152,44 @@ impl Opcode {
         }
     }
 
-    pub fn to_asm_code(&self) -> &str {
-        match *self {
-            Opcode::CLS => "CLS",
-            Opcode::RET => "RET",
-            Opcode::JMP(_) => "JMP",
-            Opcode::CALL(_) => "CALL",
-            Opcode::SKIPEQ(_, _) => "SKIPEQ",
-            Opcode::SKIPNEQ(_, _) => "SKIPNEQ",
-            Opcode::SKIPREQ(_, _) => "SKIPREQ",
-            Opcode::MOV(_, _) => "MOV",
-            Opcode::ADD(_, _) => "ADD",
-            Opcode::MOVR(_, _) => "MOVR",
-            Opcode::OR(_, _) => "OR",
-            Opcode::AND(_, _) => "AND",
-            Opcode::XOR(_, _) => "XOR",
-            Opcode::ADDR(_, _) => "ADDR",
-            Opcode::SUBR(_, _) => "SUBR",
-            Opcode::SR(_, _) => "SR",
-            Opcode::RSUB(_, _) => "RSUB",
-            Opcode::SL(_, _) => "SL",
-            Opcode::SKIPRNEQ(_, _) => "SKIPRNEQ",
-            Opcode::SI(_) => "SI",
-            Opcode::PCN(_) => "PCN",
-            Opcode::RAND(_, _) => "RAND",
-            Opcode::DRAW(_, _, _) => "DRAW",
-            Opcode::SKIPKEQ(_) => "SKIPKEQ",
-            Opcode::SKIPKNEQ(_) => "SKIPKNEQ",
-            Opcode::GDELAY(_) => "GDELAY",
-            Opcode::GKEY(_) => "GKEY",
-            Opcode::SDELAY(_) => "SDELAY",
-            Opcode::SSND(_) => "SSND",
-            Opcode::ADDI(_) => "ADDI",
-            Opcode::SPRITE(_) => "SPRITE",
-            Opcode::BCD(_) => "BCD",
-            Opcode::RDUMP(_) => "RDUMP",
-            Opcode::RLOAD(_) => "RLOAD",
-        }
-    }
+    //    pub fn to_asm_code(&self) -> &str {
+    //        match *self {
+    //            Opcode::CLS => "CLS",
+    //            Opcode::RET => "RET",
+    //            Opcode::JMP(_) => "JMP",
+    //            Opcode::CALL(_) => "CALL",
+    //            Opcode::SKIPEQ(_, _) => "SKIPEQ",
+    //            Opcode::SKIPNEQ(_, _) => "SKIPNEQ",
+    //            Opcode::SKIPREQ(_, _) => "SKIPREQ",
+    //            Opcode::MOV(_, _) => "MOV",
+    //            Opcode::ADD(_, _) => "ADD",
+    //            Opcode::MOVR(_, _) => "MOVR",
+    //            Opcode::OR(_, _) => "OR",
+    //            Opcode::AND(_, _) => "AND",
+    //            Opcode::XOR(_, _) => "XOR",
+    //            Opcode::ADDR(_, _) => "ADDR",
+    //            Opcode::SUBR(_, _) => "SUBR",
+    //            Opcode::SR(_, _) => "SR",
+    //            Opcode::RSUB(_, _) => "RSUB",
+    //            Opcode::SL(_, _) => "SL",
+    //            Opcode::SKIPRNEQ(_, _) => "SKIPRNEQ",
+    //            Opcode::SI(_) => "SI",
+    //            Opcode::PCN(_) => "PCN",
+    //            Opcode::RAND(_, _) => "RAND",
+    //            Opcode::DRAW(_, _, _) => "DRAW",
+    //            Opcode::SKIPKEQ(_) => "SKIPKEQ",
+    //            Opcode::SKIPKNEQ(_) => "SKIPKNEQ",
+    //            Opcode::GDELAY(_) => "GDELAY",
+    //            Opcode::GKEY(_) => "GKEY",
+    //            Opcode::SDELAY(_) => "SDELAY",
+    //            Opcode::SSND(_) => "SSND",
+    //            Opcode::ADDI(_) => "ADDI",
+    //            Opcode::SPRITE(_) => "SPRITE",
+    //            Opcode::BCD(_) => "BCD",
+    //            Opcode::RDUMP(_) => "RDUMP",
+    //            Opcode::RLOAD(_) => "RLOAD",
+    //        }
+    //    }
 
     pub fn to_asm(&self) -> String {
         match *self {
@@ -655,6 +655,158 @@ mod tests {
         assert_eq!(
             Some(Opcode::RLOAD(from_int(0xc).unwrap())),
             Opcode::new(0xfc65)
+        );
+    }
+
+    #[test]
+    fn test_to_asm() {
+        assert_eq!("CLS".to_string(), Opcode::new(0x00e0).unwrap().to_asm());
+
+        assert_eq!("RET".to_string(), Opcode::new(0x00ee).unwrap().to_asm());
+
+        assert_eq!(
+            "JMP $4A0".to_string(),
+            Opcode::new(0x14a0).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "CALL $4A0".to_string(),
+            Opcode::new(0x24a0).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPEQ VC, #$F1".to_string(),
+            Opcode::new(0x3cf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPNEQ VC, #$F1".to_string(),
+            Opcode::new(0x4cf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPREQ VC, VF".to_string(),
+            Opcode::new(0x5cf0).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "MOV VC, #$F1".to_string(),
+            Opcode::new(0x6cf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "ADD VC, #$F1".to_string(),
+            Opcode::new(0x7cf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "MOVR VC, VF".to_string(),
+            Opcode::new(0x8cf0).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "OR VC, VF".to_string(),
+            Opcode::new(0x8cf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "AND VC, VF".to_string(),
+            Opcode::new(0x8cf2).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "XOR VC, VF".to_string(),
+            Opcode::new(0x8cf3).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "ADDR VC, VF".to_string(),
+            Opcode::new(0x8cf4).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SUBR VC, VF".to_string(),
+            Opcode::new(0x8cf5).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SR VC, VF".to_string(),
+            Opcode::new(0x8cf6).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "RSUB VC, VF".to_string(),
+            Opcode::new(0x8cf7).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SL VC, VF".to_string(),
+            Opcode::new(0x8cfe).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPRNEQ VC, VF".to_string(),
+            Opcode::new(0x9cf0).unwrap().to_asm()
+        );
+
+        assert_eq!("SI $F80".to_string(), Opcode::new(0xaf80).unwrap().to_asm());
+
+        assert_eq!(
+            "PCN $F80".to_string(),
+            Opcode::new(0xbf80).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "RAND VC, #$F1".to_string(),
+            Opcode::new(0xccf1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "DRAW VC, V8, #$3".to_string(),
+            Opcode::new(0xdc83).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPKEQ VC".to_string(),
+            Opcode::new(0xec9e).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "SKIPKNEQ VC".to_string(),
+            Opcode::new(0xeca1).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "GDELAY VC".to_string(),
+            Opcode::new(0xfc07).unwrap().to_asm()
+        );
+
+        assert_eq!("GKEY VC".to_string(), Opcode::new(0xfc0a).unwrap().to_asm());
+
+        assert_eq!(
+            "SDELAY VC".to_string(),
+            Opcode::new(0xfc15).unwrap().to_asm()
+        );
+
+        assert_eq!("SSND VC".to_string(), Opcode::new(0xfc18).unwrap().to_asm());
+
+        assert_eq!("ADDI VC".to_string(), Opcode::new(0xfc1e).unwrap().to_asm());
+
+        assert_eq!(
+            "SPRITE VC".to_string(),
+            Opcode::new(0xfc29).unwrap().to_asm()
+        );
+
+        assert_eq!("BCD VC".to_string(), Opcode::new(0xfc33).unwrap().to_asm());
+
+        assert_eq!(
+            "RDUMP VC".to_string(),
+            Opcode::new(0xfc55).unwrap().to_asm()
+        );
+
+        assert_eq!(
+            "RLOAD VC".to_string(),
+            Opcode::new(0xfc65).unwrap().to_asm()
         );
     }
 }
