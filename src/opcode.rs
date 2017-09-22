@@ -238,23 +238,47 @@ impl Opcode {
             Opcode::CALL(ref n) => 0x2000 | *n as u16,
             Opcode::SKIPEQ(ref x, ref n) => 0x3000 | ((x.v as u16) << 8) as u16 | *n as u16,
             Opcode::SKIPNEQ(ref x, ref n) => 0x4000 | ((x.v as u16) << 8) as u16 | *n as u16,
-            Opcode::SKIPREQ(ref x, ref y) => 0x5000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::SKIPREQ(ref x, ref y) => {
+                0x5000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
             Opcode::MOV(ref x, ref n) => 0x6000 | ((x.v as u16) << 8) as u16 | *n as u16,
             Opcode::ADD(ref x, ref n) => 0x7000 | ((x.v as u16) << 8) as u16 | *n as u16,
-            Opcode::MOVR(ref x, ref y) => 0x8000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::OR(ref x, ref y) => 0x8001 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::AND(ref x, ref y) => 0x8002 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::XOR(ref x, ref y) => 0x8003 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::ADDR(ref x, ref y) => 0x8004 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::SUBR(ref x, ref y) => 0x8005 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::SR(ref x, ref y) => 0x8006 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::RSUB(ref x, ref y) => 0x8007 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::SL(ref x, ref y) => 0x800e | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
-            Opcode::SKIPRNEQ(ref x, ref y) => 0x9000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16,
+            Opcode::MOVR(ref x, ref y) => {
+                0x8000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::OR(ref x, ref y) => {
+                0x8001 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::AND(ref x, ref y) => {
+                0x8002 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::XOR(ref x, ref y) => {
+                0x8003 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::ADDR(ref x, ref y) => {
+                0x8004 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::SUBR(ref x, ref y) => {
+                0x8005 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::SR(ref x, ref y) => {
+                0x8006 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::RSUB(ref x, ref y) => {
+                0x8007 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::SL(ref x, ref y) => {
+                0x800e | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
+            Opcode::SKIPRNEQ(ref x, ref y) => {
+                0x9000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
+            }
             Opcode::SI(ref n) => 0xa000 | *n as u16,
             Opcode::PCN(ref n) => 0xb000 | *n as u16,
             Opcode::RAND(ref x, ref n) => 0xc000 | ((x.v as u16) << 8) as u16 | *n as u16,
-            Opcode::DRAW(ref x, ref y, ref n) => 0xd000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16 | *n as u16,
+            Opcode::DRAW(ref x, ref y, ref n) => {
+                0xd000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16 | *n as u16
+            }
             Opcode::SKIPKEQ(ref x) => 0xe09e | ((x.v as u16) << 8) as u16,
             Opcode::SKIPKNEQ(ref x) => 0xe0a1 | ((x.v as u16) << 8) as u16,
             Opcode::GDELAY(ref x) => 0xf007 | ((x.v as u16) << 8) as u16,
@@ -851,7 +875,7 @@ mod tests {
 
     #[test]
     fn test_to_bin() {
-        for i in 0x0000 .. 0xffff {
+        for i in 0x0000..0xffff {
             if let Some(opc) = Opcode::new(i) {
                 assert_eq!(i, opc.to_bin());
             }
