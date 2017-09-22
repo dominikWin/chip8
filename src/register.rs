@@ -1,7 +1,15 @@
+use std::fmt;
+
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct VReg {
     v: u8,
+}
+
+impl fmt::Display for VReg {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "V{:X}", self.v)
+    }
 }
 
 pub fn from_int(oc: u8) -> Option<VReg> {
@@ -44,5 +52,12 @@ mod tests {
         assert_eq!(0x4, get_y(0x3043));
         assert_eq!(0x2, get_y(0x4820));
         assert_eq!(0xf, get_y(0x7cf7));
+    }
+
+    #[test]
+    fn test_fmt() {
+        assert_eq!("V0", format!("{}", from_int(0).unwrap()));
+        assert_eq!("VC", format!("{}", from_int(0xc).unwrap()));
+        assert_eq!("VF", format!("{}", from_int(0xf).unwrap()));
     }
 }
