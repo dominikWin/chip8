@@ -1,7 +1,15 @@
-pub type VReg = u8;
+#[derive(Debug)]
+#[derive(PartialEq)]
+pub struct VReg {
+    v: u8,
+}
 
 pub fn from_int(oc: u8) -> Option<VReg> {
-    if oc > 0xf { Option::None } else { Some(oc) }
+    if oc > 0xf {
+        Option::None
+    } else {
+        Some(VReg { v: oc })
+    }
 }
 
 pub fn get_x(oc: u16) -> u8 {
@@ -18,8 +26,8 @@ mod tests {
 
     #[test]
     fn test_from_int() {
-        assert_eq!(Some(0), from_int(0));
-        assert_eq!(Some(0xf), from_int(0xf));
+        assert_eq!(Some(VReg { v: 0 }), from_int(0));
+        assert_eq!(Some(VReg { v: 0xf }), from_int(0xf));
         assert_eq!(None, from_int(0xf + 1));
         assert_eq!(None, from_int(0x43));
     }

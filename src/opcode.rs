@@ -173,67 +173,220 @@ mod tests {
         assert_eq!(Some(Opcode::CALL(0x0123)), Opcode::new(0x2123));
         assert_eq!(Some(Opcode::CALL(0x0abf)), Opcode::new(0x2abf));
 
-        assert_eq!(Some(Opcode::SKIPEQ(0x0, 0x43)), Opcode::new(0x3043));
-        assert_eq!(Some(Opcode::SKIPEQ(0xc, 0x00)), Opcode::new(0x3c00));
-        assert_eq!(Some(Opcode::SKIPEQ(0xf, 0xff)), Opcode::new(0x3fff));
+        assert_eq!(
+            Some(Opcode::SKIPEQ(from_int(0x0).unwrap(), 0x43)),
+            Opcode::new(0x3043)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPEQ(from_int(0xc).unwrap(), 0x00)),
+            Opcode::new(0x3c00)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPEQ(from_int(0xf).unwrap(), 0xff)),
+            Opcode::new(0x3fff)
+        );
 
-        assert_eq!(Some(Opcode::SKIPNEQ(0x0, 0x43)), Opcode::new(0x4043));
-        assert_eq!(Some(Opcode::SKIPNEQ(0xc, 0x00)), Opcode::new(0x4c00));
-        assert_eq!(Some(Opcode::SKIPNEQ(0xf, 0xff)), Opcode::new(0x4fff));
+        assert_eq!(
+            Some(Opcode::SKIPNEQ(from_int(0x0).unwrap(), 0x43)),
+            Opcode::new(0x4043)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPNEQ(from_int(0xc).unwrap(), 0x00)),
+            Opcode::new(0x4c00)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPNEQ(from_int(0xf).unwrap(), 0xff)),
+            Opcode::new(0x4fff)
+        );
 
-        assert_eq!(Some(Opcode::SKIPREQ(0x0, 0x4)), Opcode::new(0x5040));
-        assert_eq!(Some(Opcode::SKIPREQ(0xc, 0x0)), Opcode::new(0x5c00));
-        assert_eq!(Some(Opcode::SKIPREQ(0xf, 0xf)), Opcode::new(0x5ff0));
+        assert_eq!(
+            Some(Opcode::SKIPREQ(
+                from_int(0x0).unwrap(),
+                from_int(0x4).unwrap(),
+            )),
+            Opcode::new(0x5040)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPREQ(
+                from_int(0xc).unwrap(),
+                from_int(0x0).unwrap(),
+            )),
+            Opcode::new(0x5c00)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPREQ(
+                from_int(0xf).unwrap(),
+                from_int(0xf).unwrap(),
+            )),
+            Opcode::new(0x5ff0)
+        );
         assert_eq!(None, Opcode::new(0x5ff1));
         assert_eq!(None, Opcode::new(0x5ffa));
 
-        assert_eq!(Some(Opcode::MOV(0x0, 0x32)), Opcode::new(0x6032));
-        assert_eq!(Some(Opcode::MOV(0xf, 0x6c)), Opcode::new(0x6f6c));
-        assert_eq!(Some(Opcode::MOV(0xc, 0xff)), Opcode::new(0x6cff));
+        assert_eq!(
+            Some(Opcode::MOV(from_int(0x0).unwrap(), 0x32)),
+            Opcode::new(0x6032)
+        );
+        assert_eq!(
+            Some(Opcode::MOV(from_int(0xf).unwrap(), 0x6c)),
+            Opcode::new(0x6f6c)
+        );
+        assert_eq!(
+            Some(Opcode::MOV(from_int(0xc).unwrap(), 0xff)),
+            Opcode::new(0x6cff)
+        );
 
-        assert_eq!(Some(Opcode::ADD(0x0, 0x32)), Opcode::new(0x7032));
-        assert_eq!(Some(Opcode::ADD(0xf, 0x6c)), Opcode::new(0x7f6c));
-        assert_eq!(Some(Opcode::ADD(0xc, 0xff)), Opcode::new(0x7cff));
+        assert_eq!(
+            Some(Opcode::ADD(from_int(0x0).unwrap(), 0x32)),
+            Opcode::new(0x7032)
+        );
+        assert_eq!(
+            Some(Opcode::ADD(from_int(0xf).unwrap(), 0x6c)),
+            Opcode::new(0x7f6c)
+        );
+        assert_eq!(
+            Some(Opcode::ADD(from_int(0xc).unwrap(), 0xff)),
+            Opcode::new(0x7cff)
+        );
 
-        assert_eq!(Some(Opcode::MOVR(0x0, 0x4)), Opcode::new(0x8040));
-        assert_eq!(Some(Opcode::MOVR(0xc, 0x0)), Opcode::new(0x8c00));
-        assert_eq!(Some(Opcode::MOVR(0xf, 0xf)), Opcode::new(0x8ff0));
+        assert_eq!(
+            Some(Opcode::MOVR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8040)
+        );
+        assert_eq!(
+            Some(Opcode::MOVR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c00)
+        );
+        assert_eq!(
+            Some(Opcode::MOVR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff0)
+        );
 
-        assert_eq!(Some(Opcode::OR(0x0, 0x4)), Opcode::new(0x8041));
-        assert_eq!(Some(Opcode::OR(0xc, 0x0)), Opcode::new(0x8c01));
-        assert_eq!(Some(Opcode::OR(0xf, 0xf)), Opcode::new(0x8ff1));
+        assert_eq!(
+            Some(Opcode::OR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8041)
+        );
+        assert_eq!(
+            Some(Opcode::OR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c01)
+        );
+        assert_eq!(
+            Some(Opcode::OR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff1)
+        );
 
-        assert_eq!(Some(Opcode::AND(0x0, 0x4)), Opcode::new(0x8042));
-        assert_eq!(Some(Opcode::AND(0xc, 0x0)), Opcode::new(0x8c02));
-        assert_eq!(Some(Opcode::AND(0xf, 0xf)), Opcode::new(0x8ff2));
+        assert_eq!(
+            Some(Opcode::AND(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8042)
+        );
+        assert_eq!(
+            Some(Opcode::AND(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c02)
+        );
+        assert_eq!(
+            Some(Opcode::AND(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff2)
+        );
 
-        assert_eq!(Some(Opcode::XOR(0x0, 0x4)), Opcode::new(0x8043));
-        assert_eq!(Some(Opcode::XOR(0xc, 0x0)), Opcode::new(0x8c03));
-        assert_eq!(Some(Opcode::XOR(0xf, 0xf)), Opcode::new(0x8ff3));
+        assert_eq!(
+            Some(Opcode::XOR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8043)
+        );
+        assert_eq!(
+            Some(Opcode::XOR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c03)
+        );
+        assert_eq!(
+            Some(Opcode::XOR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff3)
+        );
 
-        assert_eq!(Some(Opcode::ADDR(0x0, 0x4)), Opcode::new(0x8044));
-        assert_eq!(Some(Opcode::ADDR(0xc, 0x0)), Opcode::new(0x8c04));
-        assert_eq!(Some(Opcode::ADDR(0xf, 0xf)), Opcode::new(0x8ff4));
+        assert_eq!(
+            Some(Opcode::ADDR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8044)
+        );
+        assert_eq!(
+            Some(Opcode::ADDR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c04)
+        );
+        assert_eq!(
+            Some(Opcode::ADDR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff4)
+        );
 
-        assert_eq!(Some(Opcode::SUBR(0x0, 0x4)), Opcode::new(0x8045));
-        assert_eq!(Some(Opcode::SUBR(0xc, 0x0)), Opcode::new(0x8c05));
-        assert_eq!(Some(Opcode::SUBR(0xf, 0xf)), Opcode::new(0x8ff5));
+        assert_eq!(
+            Some(Opcode::SUBR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8045)
+        );
+        assert_eq!(
+            Some(Opcode::SUBR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c05)
+        );
+        assert_eq!(
+            Some(Opcode::SUBR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff5)
+        );
 
-        assert_eq!(Some(Opcode::SR(0x0, 0x4)), Opcode::new(0x8046));
-        assert_eq!(Some(Opcode::SR(0xc, 0x0)), Opcode::new(0x8c06));
-        assert_eq!(Some(Opcode::SR(0xf, 0xf)), Opcode::new(0x8ff6));
+        assert_eq!(
+            Some(Opcode::SR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8046)
+        );
+        assert_eq!(
+            Some(Opcode::SR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c06)
+        );
+        assert_eq!(
+            Some(Opcode::SR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff6)
+        );
 
-        assert_eq!(Some(Opcode::RSUB(0x0, 0x4)), Opcode::new(0x8047));
-        assert_eq!(Some(Opcode::RSUB(0xc, 0x0)), Opcode::new(0x8c07));
-        assert_eq!(Some(Opcode::RSUB(0xf, 0xf)), Opcode::new(0x8ff7));
+        assert_eq!(
+            Some(Opcode::RSUB(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x8047)
+        );
+        assert_eq!(
+            Some(Opcode::RSUB(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c07)
+        );
+        assert_eq!(
+            Some(Opcode::RSUB(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ff7)
+        );
 
-        assert_eq!(Some(Opcode::SL(0x0, 0x4)), Opcode::new(0x804e));
-        assert_eq!(Some(Opcode::SL(0xc, 0x0)), Opcode::new(0x8c0e));
-        assert_eq!(Some(Opcode::SL(0xf, 0xf)), Opcode::new(0x8ffe));
+        assert_eq!(
+            Some(Opcode::SL(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Opcode::new(0x804e)
+        );
+        assert_eq!(
+            Some(Opcode::SL(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Opcode::new(0x8c0e)
+        );
+        assert_eq!(
+            Some(Opcode::SL(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Opcode::new(0x8ffe)
+        );
 
-        assert_eq!(Some(Opcode::SKIPRNEQ(0x0, 0x4)), Opcode::new(0x9040));
-        assert_eq!(Some(Opcode::SKIPRNEQ(0xc, 0x0)), Opcode::new(0x9c00));
-        assert_eq!(Some(Opcode::SKIPRNEQ(0xf, 0xf)), Opcode::new(0x9ff0));
+        assert_eq!(
+            Some(Opcode::SKIPRNEQ(
+                from_int(0x0).unwrap(),
+                from_int(0x4).unwrap(),
+            )),
+            Opcode::new(0x9040)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPRNEQ(
+                from_int(0xc).unwrap(),
+                from_int(0x0).unwrap(),
+            )),
+            Opcode::new(0x9c00)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPRNEQ(
+                from_int(0xf).unwrap(),
+                from_int(0xf).unwrap(),
+            )),
+            Opcode::new(0x9ff0)
+        );
         assert_eq!(None, Opcode::new(0x5ff1));
         assert_eq!(None, Opcode::new(0x5ffa));
 
@@ -245,56 +398,185 @@ mod tests {
         assert_eq!(Some(Opcode::PCN(0x01af)), Opcode::new(0xb1af));
         assert_eq!(Some(Opcode::PCN(0x0fff)), Opcode::new(0xbfff));
 
-        assert_eq!(Some(Opcode::RAND(0x0, 0x32)), Opcode::new(0xc032));
-        assert_eq!(Some(Opcode::RAND(0xf, 0x6c)), Opcode::new(0xcf6c));
-        assert_eq!(Some(Opcode::RAND(0xc, 0xff)), Opcode::new(0xccff));
+        assert_eq!(
+            Some(Opcode::RAND(from_int(0x0).unwrap(), 0x32)),
+            Opcode::new(0xc032)
+        );
+        assert_eq!(
+            Some(Opcode::RAND(from_int(0xf).unwrap(), 0x6c)),
+            Opcode::new(0xcf6c)
+        );
+        assert_eq!(
+            Some(Opcode::RAND(from_int(0xc).unwrap(), 0xff)),
+            Opcode::new(0xccff)
+        );
 
-        assert_eq!(Some(Opcode::DRAW(0x0, 0x3, 0x2)), Opcode::new(0xd032));
-        assert_eq!(Some(Opcode::DRAW(0xf, 0x6, 0xc)), Opcode::new(0xdf6c));
-        assert_eq!(Some(Opcode::DRAW(0xc, 0xf, 0xf)), Opcode::new(0xdcff));
+        assert_eq!(
+            Some(Opcode::DRAW(
+                from_int(0x0).unwrap(),
+                from_int(0x3).unwrap(),
+                0x2,
+            )),
+            Opcode::new(0xd032)
+        );
+        assert_eq!(
+            Some(Opcode::DRAW(
+                from_int(0xf).unwrap(),
+                from_int(0x6).unwrap(),
+                0xc,
+            )),
+            Opcode::new(0xdf6c)
+        );
+        assert_eq!(
+            Some(Opcode::DRAW(
+                from_int(0xc).unwrap(),
+                from_int(0xf).unwrap(),
+                0xf,
+            )),
+            Opcode::new(0xdcff)
+        );
 
-        assert_eq!(Some(Opcode::SKIPKEQ(0x0)), Opcode::new(0xe09e));
-        assert_eq!(Some(Opcode::SKIPKEQ(0xf)), Opcode::new(0xef9e));
-        assert_eq!(Some(Opcode::SKIPKEQ(0xc)), Opcode::new(0xec9e));
+        assert_eq!(
+            Some(Opcode::SKIPKEQ(from_int(0x0).unwrap())),
+            Opcode::new(0xe09e)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPKEQ(from_int(0xf).unwrap())),
+            Opcode::new(0xef9e)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPKEQ(from_int(0xc).unwrap())),
+            Opcode::new(0xec9e)
+        );
 
-        assert_eq!(Some(Opcode::SKIPKNEQ(0x0)), Opcode::new(0xe0a1));
-        assert_eq!(Some(Opcode::SKIPKNEQ(0xf)), Opcode::new(0xefa1));
-        assert_eq!(Some(Opcode::SKIPKNEQ(0xc)), Opcode::new(0xeca1));
+        assert_eq!(
+            Some(Opcode::SKIPKNEQ(from_int(0x0).unwrap())),
+            Opcode::new(0xe0a1)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPKNEQ(from_int(0xf).unwrap())),
+            Opcode::new(0xefa1)
+        );
+        assert_eq!(
+            Some(Opcode::SKIPKNEQ(from_int(0xc).unwrap())),
+            Opcode::new(0xeca1)
+        );
 
-        assert_eq!(Some(Opcode::GDELAY(0x0)), Opcode::new(0xf007));
-        assert_eq!(Some(Opcode::GDELAY(0xf)), Opcode::new(0xff07));
-        assert_eq!(Some(Opcode::GDELAY(0xc)), Opcode::new(0xfc07));
+        assert_eq!(
+            Some(Opcode::GDELAY(from_int(0x0).unwrap())),
+            Opcode::new(0xf007)
+        );
+        assert_eq!(
+            Some(Opcode::GDELAY(from_int(0xf).unwrap())),
+            Opcode::new(0xff07)
+        );
+        assert_eq!(
+            Some(Opcode::GDELAY(from_int(0xc).unwrap())),
+            Opcode::new(0xfc07)
+        );
 
-        assert_eq!(Some(Opcode::GKEY(0x0)), Opcode::new(0xf00a));
-        assert_eq!(Some(Opcode::GKEY(0xf)), Opcode::new(0xff0a));
-        assert_eq!(Some(Opcode::GKEY(0xc)), Opcode::new(0xfc0a));
+        assert_eq!(
+            Some(Opcode::GKEY(from_int(0x0).unwrap())),
+            Opcode::new(0xf00a)
+        );
+        assert_eq!(
+            Some(Opcode::GKEY(from_int(0xf).unwrap())),
+            Opcode::new(0xff0a)
+        );
+        assert_eq!(
+            Some(Opcode::GKEY(from_int(0xc).unwrap())),
+            Opcode::new(0xfc0a)
+        );
 
-        assert_eq!(Some(Opcode::SDELAY(0x0)), Opcode::new(0xf015));
-        assert_eq!(Some(Opcode::SDELAY(0xf)), Opcode::new(0xff15));
-        assert_eq!(Some(Opcode::SDELAY(0xc)), Opcode::new(0xfc15));
+        assert_eq!(
+            Some(Opcode::SDELAY(from_int(0x0).unwrap())),
+            Opcode::new(0xf015)
+        );
+        assert_eq!(
+            Some(Opcode::SDELAY(from_int(0xf).unwrap())),
+            Opcode::new(0xff15)
+        );
+        assert_eq!(
+            Some(Opcode::SDELAY(from_int(0xc).unwrap())),
+            Opcode::new(0xfc15)
+        );
 
-        assert_eq!(Some(Opcode::SSND(0x0)), Opcode::new(0xf018));
-        assert_eq!(Some(Opcode::SSND(0xf)), Opcode::new(0xff18));
-        assert_eq!(Some(Opcode::SSND(0xc)), Opcode::new(0xfc18));
+        assert_eq!(
+            Some(Opcode::SSND(from_int(0x0).unwrap())),
+            Opcode::new(0xf018)
+        );
+        assert_eq!(
+            Some(Opcode::SSND(from_int(0xf).unwrap())),
+            Opcode::new(0xff18)
+        );
+        assert_eq!(
+            Some(Opcode::SSND(from_int(0xc).unwrap())),
+            Opcode::new(0xfc18)
+        );
 
-        assert_eq!(Some(Opcode::ADDI(0x0)), Opcode::new(0xf01e));
-        assert_eq!(Some(Opcode::ADDI(0xf)), Opcode::new(0xff1e));
-        assert_eq!(Some(Opcode::ADDI(0xc)), Opcode::new(0xfc1e));
+        assert_eq!(
+            Some(Opcode::ADDI(from_int(0x0).unwrap())),
+            Opcode::new(0xf01e)
+        );
+        assert_eq!(
+            Some(Opcode::ADDI(from_int(0xf).unwrap())),
+            Opcode::new(0xff1e)
+        );
+        assert_eq!(
+            Some(Opcode::ADDI(from_int(0xc).unwrap())),
+            Opcode::new(0xfc1e)
+        );
 
-        assert_eq!(Some(Opcode::SPRITE(0x0)), Opcode::new(0xf029));
-        assert_eq!(Some(Opcode::SPRITE(0xf)), Opcode::new(0xff29));
-        assert_eq!(Some(Opcode::SPRITE(0xc)), Opcode::new(0xfc29));
+        assert_eq!(
+            Some(Opcode::SPRITE(from_int(0x0).unwrap())),
+            Opcode::new(0xf029)
+        );
+        assert_eq!(
+            Some(Opcode::SPRITE(from_int(0xf).unwrap())),
+            Opcode::new(0xff29)
+        );
+        assert_eq!(
+            Some(Opcode::SPRITE(from_int(0xc).unwrap())),
+            Opcode::new(0xfc29)
+        );
 
-        assert_eq!(Some(Opcode::BCD(0x0)), Opcode::new(0xf033));
-        assert_eq!(Some(Opcode::BCD(0xf)), Opcode::new(0xff33));
-        assert_eq!(Some(Opcode::BCD(0xc)), Opcode::new(0xfc33));
+        assert_eq!(
+            Some(Opcode::BCD(from_int(0x0).unwrap())),
+            Opcode::new(0xf033)
+        );
+        assert_eq!(
+            Some(Opcode::BCD(from_int(0xf).unwrap())),
+            Opcode::new(0xff33)
+        );
+        assert_eq!(
+            Some(Opcode::BCD(from_int(0xc).unwrap())),
+            Opcode::new(0xfc33)
+        );
 
-        assert_eq!(Some(Opcode::RDUMP(0x0)), Opcode::new(0xf055));
-        assert_eq!(Some(Opcode::RDUMP(0xf)), Opcode::new(0xff55));
-        assert_eq!(Some(Opcode::RDUMP(0xc)), Opcode::new(0xfc55));
+        assert_eq!(
+            Some(Opcode::RDUMP(from_int(0x0).unwrap())),
+            Opcode::new(0xf055)
+        );
+        assert_eq!(
+            Some(Opcode::RDUMP(from_int(0xf).unwrap())),
+            Opcode::new(0xff55)
+        );
+        assert_eq!(
+            Some(Opcode::RDUMP(from_int(0xc).unwrap())),
+            Opcode::new(0xfc55)
+        );
 
-        assert_eq!(Some(Opcode::RLOAD(0x0)), Opcode::new(0xf065));
-        assert_eq!(Some(Opcode::RLOAD(0xf)), Opcode::new(0xff65));
-        assert_eq!(Some(Opcode::RLOAD(0xc)), Opcode::new(0xfc65));
+        assert_eq!(
+            Some(Opcode::RLOAD(from_int(0x0).unwrap())),
+            Opcode::new(0xf065)
+        );
+        assert_eq!(
+            Some(Opcode::RLOAD(from_int(0xf).unwrap())),
+            Opcode::new(0xff65)
+        );
+        assert_eq!(
+            Some(Opcode::RLOAD(from_int(0xc).unwrap())),
+            Opcode::new(0xfc65)
+        );
     }
 }
