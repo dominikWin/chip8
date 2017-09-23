@@ -5,3 +5,5 @@ authors = ["Dominik Winecki <dominikwinecki@gmail.com>"]
 
 [dependencies]
 clap = "*"
+log = "*"
+env_logger = "*"

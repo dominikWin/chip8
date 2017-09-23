@@ -1,5 +1,9 @@
 extern crate clap;
 
+#[macro_use]
+extern crate log;
+extern crate env_logger;
+
 use clap::{Arg, App, SubCommand};
 
 
@@ -7,8 +11,10 @@ mod opcode;
 mod register;
 mod commands;
 mod util;
+mod program;
 
 fn main() {
+    env_logger::init().unwrap();
     let matches = App::new("chip8")
         .version("0.1.0")
         .author("Dominik Winecki <dominikwinecki@gmail.com>")
@@ -29,6 +35,8 @@ fn main() {
         println!("No command found!\n\n{}", matches.usage());
         return;
     }
+
+    info!("{:?}", matches);
 
     match matches.subcommand_name().unwrap() {
         "decompile" => commands::decompile::cmd_decompile(
