@@ -26,7 +26,7 @@ fn main() {
         .get_matches();
 
     if matches.subcommand_name().is_none() {
-        println!("No command found!\n{}", matches.usage());
+        println!("No command found!\n\n{}", matches.usage());
         return;
     }
 
