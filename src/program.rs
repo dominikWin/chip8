@@ -39,12 +39,13 @@ mod tests {
 
     #[test]
     fn test_new() {
+        assert_eq!(Chip8Program{instructions: vec![]}, Chip8Program::new(&[]));
+        assert_eq!(Chip8Program{instructions: vec![]}, Chip8Program::new(&[0x12]));
         assert_eq!(Chip8Program{instructions: vec![0x0000]}, Chip8Program::new(&[0x00, 0x00]));
         assert_eq!(Chip8Program{instructions: vec![0x1234]}, Chip8Program::new(&[0x12, 0x34]));
         assert_eq!(Chip8Program{instructions: vec![0x1234]}, Chip8Program::new(&[0x12, 0x34, 0x12]));
         assert_eq!(Chip8Program{instructions: vec![0x1234, 0x1242]}, Chip8Program::new(&[0x12, 0x34, 0x12, 0x42]));
         assert_eq!(Chip8Program{instructions: vec![0x1234, 0x1242, 0xabcd]}, Chip8Program::new(&[0x12, 0x34, 0x12, 0x42, 0xab, 0xcd]));
-
-        assert_ne!(Chip8Program{instructions: vec![0x1234]}, Chip8Program::new(&[0x12, 0x34, 0x12, 0x42]));
+        assert_eq!(Chip8Program{instructions: vec![0x1234, 0x1242, 0xabcd]}, Chip8Program::new(&[0x12, 0x34, 0x12, 0x42, 0xab, 0xcd, 0xff]));
     }
 }
