@@ -11,6 +11,7 @@ mod opcode;
 mod register;
 mod commands;
 mod util;
+mod state;
 mod program;
 
 fn main() {
