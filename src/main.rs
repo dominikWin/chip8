@@ -27,6 +27,7 @@ fn main() {
                     Arg::with_name("input")
                         .short("i")
                         .value_name("INPUT")
+                        .help("The file to be decompiled. If - then stdin is read.")
                         .required(true),
                 ),
         )

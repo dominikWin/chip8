@@ -11,11 +11,31 @@ pub fn cmd_decompile(matches: &ArgMatches) {
         if input_val == "-" {
             Box::new(io::stdin())
         } else {
-            Box::new(fs::File::open(input_val).expect("file not found"))
+            let file = fs::File::open(input_val);
+            if let Err(e) = file {
+                println!(
+                    "File {} can't be opened: {}",
+                    matches.value_of("input").unwrap(),
+                    e
+                );
+                return;
+            }
+            Box::new(file.unwrap())
         }
     };
 
-    let program = Chip8Program::from(input).unwrap();
+    let program = Chip8Program::from(input);
+
+    if let Err(e) = program {
+        println!(
+            "File {} can't be read: {}",
+            matches.value_of("input").unwrap(),
+            e
+        );
+        return;
+    }
+
+    let program = program.unwrap();
 
     let mut addr: u16 = 0x200;
 
