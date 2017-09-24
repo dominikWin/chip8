@@ -76,6 +76,51 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.load_program(&Chip8Program::new(&[0u8; 0]));
         assert_eq!(Chip8State::new(), tmp);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0x00, tmp.mem[0x0200]);
+        assert_eq!(0x00, tmp.mem[0x0201]);
+        assert_eq!(0x00, tmp.mem[0x0202]);
+        tmp.load_program(&Chip8Program::new(&[0xab, 0xcd]));
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0xab, tmp.mem[0x0200]);
+        assert_eq!(0xcd, tmp.mem[0x0201]);
+        assert_eq!(0x00, tmp.mem[0x0202]);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0x00, tmp.mem[0x0200]);
+        assert_eq!(0x00, tmp.mem[0x0201]);
+        assert_eq!(0x00, tmp.mem[0x0202]);
+        assert_eq!(0x00, tmp.mem[0x0203]);
+        assert_eq!(0x00, tmp.mem[0x0204]);
+        assert_eq!(0x00, tmp.mem[0x0205]);
+        tmp.load_program(&Chip8Program::new(&[0xab, 0xcd, 0x12, 0x34]));
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0xab, tmp.mem[0x0200]);
+        assert_eq!(0xcd, tmp.mem[0x0201]);
+        assert_eq!(0x12, tmp.mem[0x0202]);
+        assert_eq!(0x34, tmp.mem[0x0203]);
+        assert_eq!(0x00, tmp.mem[0x0204]);
+        assert_eq!(0x00, tmp.mem[0x0205]);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0x00, tmp.mem[0x0200]);
+        assert_eq!(0x00, tmp.mem[0x0201]);
+        assert_eq!(0x00, tmp.mem[0x0202]);
+        assert_eq!(0x00, tmp.mem[0x0203]);
+        assert_eq!(0x00, tmp.mem[0x0204]);
+        assert_eq!(0x00, tmp.mem[0x0205]);
+        tmp.load_program(&Chip8Program::new(&[0xab, 0xcd, 0x12, 0x34, 0x56]));
+        assert_eq!(0x00, tmp.mem[0x01ff]);
+        assert_eq!(0xab, tmp.mem[0x0200]);
+        assert_eq!(0xcd, tmp.mem[0x0201]);
+        assert_eq!(0x12, tmp.mem[0x0202]);
+        assert_eq!(0x34, tmp.mem[0x0203]);
+        assert_eq!(0x00, tmp.mem[0x0204]);
+        assert_eq!(0x00, tmp.mem[0x0205]);
     }
 
     #[test]
