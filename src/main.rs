@@ -1,8 +1,11 @@
-extern crate clap;
+#![feature(test)]
+extern crate test;
 
+extern crate clap;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
+extern crate rand;
 
 use clap::{Arg, App, SubCommand};
 

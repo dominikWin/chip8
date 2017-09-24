@@ -3,6 +3,9 @@ use std::fmt;
 use std::cmp;
 use opcode::Opcode;
 use register::VReg;
+use rand;
+use rand::Rng;
+use test::Bencher;
 
 pub struct Chip8State {
     pub vregs: [u8; 16],
@@ -147,7 +150,9 @@ impl Chip8State {
                 self.pc = n + (self.vregs[0x0] as u16);
                 skip_inc_pc = true;
             }
-            Opcode::RAND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RAND(x, n) => {
+                self.set_vreg_val(&x, random(n));
+            }
             Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKNEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -166,6 +171,8 @@ impl Chip8State {
         }
     }
 
+
+
     fn vreg_val(&self, vreg: &VReg) -> u8 {
         self.vregs[vreg.v as usize]
     }
@@ -173,6 +180,12 @@ impl Chip8State {
     fn set_vreg_val(&mut self, vreg: &VReg, val: u8) {
         self.vregs[vreg.v as usize] = val;
     }
+}
+
+fn random(mask: u8) -> u8 {
+    let mut rng = rand::thread_rng();
+    let rand = rng.gen::<u8>() & mask;
+    rand
 }
 
 impl fmt::Debug for Chip8State {
@@ -684,5 +697,30 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
         tmp.exec_step();
         assert_eq!(0x0abc + 0xad, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_RAND() {
+        fn gen_rand(mask: u8) -> u8 {
+            let mut tmp = Chip8State::new();
+            tmp.load_program(&Chip8Program::new(&[0xca, mask]));
+            tmp.exec_step();
+            return tmp.vregs[0xa];
+        }
+
+        for _ in 0..1000 {
+            assert!(gen_rand(0b00000001) < 2);
+            assert!(gen_rand(0b00000011) < 4);
+            assert!(gen_rand(0b00000111) < 8);
+            assert!(gen_rand(0b00001111) < 16);
+            assert!(gen_rand(0b00011111) < 32);
+            assert!(gen_rand(0b00111111) < 64);
+            assert!(gen_rand(0b01111111) < 128);
+        }
+    }
+
+    #[bench]
+    fn bench_random(b: &mut Bencher) {
+        b.iter(|| random(0xff));
     }
 }
