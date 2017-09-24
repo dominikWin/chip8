@@ -2,6 +2,7 @@ use program::Chip8Program;
 use std::fmt;
 use std::cmp;
 use opcode::Opcode;
+use register::VReg;
 
 pub struct Chip8State {
     pub vregs: [u8; 16],
@@ -52,8 +53,18 @@ impl Chip8State {
                 skip_inc_pc = true;
             }
             Opcode::CALL(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::SKIPEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::SKIPNEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPEQ(x, n) => {
+                if self.vreg_val(x) == n {
+                    self.pc += 4;
+                    skip_inc_pc = true;
+                }
+            }
+            Opcode::SKIPNEQ(x, n) => {
+                if self.vreg_val(x) != n {
+                    self.pc += 4;
+                    skip_inc_pc = true;
+                }
+            }
             Opcode::SKIPREQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::MOV(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::ADD(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -83,10 +94,13 @@ impl Chip8State {
             Opcode::RDUMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RLOAD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
         }
-        info!("Executed instruction {:?} at {:x}", opcode, self.pc);
         if !skip_inc_pc {
             self.pc += 2;
         }
+    }
+
+    fn vreg_val(&self, vreg: VReg) -> u8 {
+        self.vregs[vreg.v as usize]
     }
 }
 
@@ -232,5 +246,35 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0x1a, 0xbc]));
         tmp.exec_step();
         assert_eq!(0x0abc, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_SKIPEQ() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x30, 0x00]));
+        tmp.exec_step();
+        assert_eq!(0x0204, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x30, 0x01]));
+        tmp.exec_step();
+        assert_eq!(0x0202, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_SKIPNEQ() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x40, 0x00]));
+        tmp.exec_step();
+        assert_eq!(0x0202, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x40, 0x01]));
+        tmp.exec_step();
+        assert_eq!(0x0204, tmp.pc);
     }
 }
