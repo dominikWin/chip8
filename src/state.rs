@@ -65,7 +65,12 @@ impl Chip8State {
                     skip_inc_pc = true;
                 }
             }
-            Opcode::SKIPREQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPREQ(x, y) => {
+                if self.vreg_val(x) == self.vreg_val(y) {
+                    self.pc += 4;
+                    skip_inc_pc = true;
+                }
+            }
             Opcode::MOV(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::ADD(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::MOVR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -77,7 +82,12 @@ impl Chip8State {
             Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RSUB(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::SKIPRNEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPRNEQ(x, y) => {
+                if self.vreg_val(x) != self.vreg_val(y) {
+                    self.pc += 4;
+                    skip_inc_pc = true;
+                }
+            }
             Opcode::SI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::PCN(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RAND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -274,6 +284,38 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x40, 0x01]));
+        tmp.exec_step();
+        assert_eq!(0x0204, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_SKIPREQ() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x52, 0x20]));
+        tmp.exec_step();
+        assert_eq!(0x0204, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.vregs[4] = 0x32;
+        tmp.load_program(&Chip8Program::new(&[0x52, 0x40]));
+        tmp.exec_step();
+        assert_eq!(0x0202, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_SKIPRNEQ() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x92, 0x20]));
+        tmp.exec_step();
+        assert_eq!(0x0202, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.vregs[4] = 0x32;
+        tmp.load_program(&Chip8Program::new(&[0x92, 0x40]));
         tmp.exec_step();
         assert_eq!(0x0204, tmp.pc);
     }
