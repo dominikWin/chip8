@@ -114,7 +114,13 @@ impl Chip8State {
                 self.vregs[0xf] = carry as u8;
             }
             Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::RSUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RSUBR(x, y) => {
+                let x_val = self.vreg_val(&x);
+                let y_val = self.vreg_val(&y);
+                let (new_val, carry) = y_val.overflowing_sub(x_val);
+                self.set_vreg_val(&x, new_val);
+                self.vregs[0xf] = carry as u8;
+            }
             Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPRNEQ(x, y) => {
                 if self.vreg_val(&x) != self.vreg_val(&y) {
@@ -543,6 +549,45 @@ mod tests {
         tmp.exec_step();
         assert_eq!(0xfe, tmp.vregs[0x1]);
         assert_eq!(0x7, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+    }
+
+    #[test]
+    fn test_exec_RSUBR() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x2;
+        tmp.vregs[0x2] = 0x5;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
+        tmp.exec_step();
+        assert_eq!(0x3, tmp.vregs[0x1]);
+        assert_eq!(0x5, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x23;
+        tmp.vregs[0x2] = 0xfa;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
+        tmp.exec_step();
+        assert_eq!(0xfa - 0x23, tmp.vregs[0x1]);
+        assert_eq!(0xfa, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x6;
+        tmp.vregs[0x2] = 0x5;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
+        tmp.exec_step();
+        assert_eq!(0xff, tmp.vregs[0x1]);
+        assert_eq!(0x5, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x7;
+        tmp.vregs[0x2] = 0x5;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
+        tmp.exec_step();
+        assert_eq!(0xfe, tmp.vregs[0x1]);
+        assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
     }
 }
