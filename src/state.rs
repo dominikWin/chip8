@@ -88,7 +88,7 @@ impl Chip8State {
                     skip_inc_pc = true;
                 }
             }
-            Opcode::SI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SI(n) => self.i = n,
             Opcode::PCN(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RAND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -318,5 +318,14 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0x92, 0x40]));
         tmp.exec_step();
         assert_eq!(0x0204, tmp.pc);
+    }
+
+    #[test]
+    fn test_exec_SI() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0000, tmp.i);
+        tmp.load_program(&Chip8Program::new(&[0xaa, 0xbc]));
+        tmp.exec_step();
+        assert_eq!(0x0abc, tmp.i);
     }
 }
