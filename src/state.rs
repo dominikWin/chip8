@@ -113,7 +113,14 @@ impl Chip8State {
                 self.set_vreg_val(&x, new_val);
                 self.vregs[0xf] = carry as u8;
             }
-            Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SR(x, y) => {
+                let y_val = self.vreg_val(&y);
+                let lsb = y_val & 0x1;
+                let new_val = y_val >> 1;
+                self.set_vreg_val(&x, new_val);
+                self.set_vreg_val(&y, new_val);
+                self.vregs[0xf] = lsb;
+            }
             Opcode::RSUBR(x, y) => {
                 let x_val = self.vreg_val(&x);
                 let y_val = self.vreg_val(&y);
@@ -121,7 +128,14 @@ impl Chip8State {
                 self.set_vreg_val(&x, new_val);
                 self.vregs[0xf] = carry as u8;
             }
-            Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SL(x, y) => {
+                let y_val = self.vreg_val(&y);
+                let msb = (y_val & 0b10000000) >> 7;
+                let new_val = y_val << 1;
+                self.set_vreg_val(&x, new_val);
+                self.set_vreg_val(&y, new_val);
+                self.vregs[0xf] = msb;
+            }
             Opcode::SKIPRNEQ(x, y) => {
                 if self.vreg_val(&x) != self.vreg_val(&y) {
                     self.pc += 4;
@@ -589,5 +603,63 @@ mod tests {
         assert_eq!(0xfe, tmp.vregs[0x1]);
         assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
+    }
+
+    #[test]
+    fn test_exec_SR() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b10101010;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xa6]));
+        tmp.exec_step();
+        assert_eq!(0b01010101, tmp.vregs[0xa]);
+        assert_eq!(0b01010101, tmp.vregs[0x8]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b10101011;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xa6]));
+        tmp.exec_step();
+        assert_eq!(0b01010101, tmp.vregs[0xa]);
+        assert_eq!(0b01010101, tmp.vregs[0x8]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b10101011;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xa6, 0x88, 0xa6]));
+        tmp.exec_step();
+        assert_eq!(0x1, tmp.vregs[0xf]);
+        tmp.exec_step();
+        assert_eq!(0b00101010, tmp.vregs[0xa]);
+        assert_eq!(0b00101010, tmp.vregs[0x8]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+    }
+
+    #[test]
+    fn test_exec_SL() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b10101010;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xae]));
+        tmp.exec_step();
+        assert_eq!(0b01010100, tmp.vregs[0xa]);
+        assert_eq!(0b01010100, tmp.vregs[0x8]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b00101010;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xae]));
+        tmp.exec_step();
+        assert_eq!(0b01010100, tmp.vregs[0xa]);
+        assert_eq!(0b01010100, tmp.vregs[0x8]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0b00101010;
+        tmp.load_program(&Chip8Program::new(&[0x88, 0xae, 0x88, 0xae]));
+        tmp.exec_step();
+        assert_eq!(0x0, tmp.vregs[0xf]);
+        tmp.exec_step();
+        assert_eq!(0b10101000, tmp.vregs[0xa]);
+        assert_eq!(0b10101000, tmp.vregs[0x8]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
     }
 }
