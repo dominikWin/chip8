@@ -5,6 +5,8 @@ use opcode::Opcode;
 use register::VReg;
 use rand;
 use rand::Rng;
+
+#[cfg(test)]
 use test::Bencher;
 
 pub struct Chip8State {
@@ -166,7 +168,10 @@ impl Chip8State {
                 self.delay = delay;
             }
             Opcode::SSND(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::ADDI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::ADDI(x) => {
+                let sum = self.i + self.vreg_val(&x) as u16;
+                self.i = sum;
+            }
             Opcode::SPRITE(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::BCD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RDUMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -760,5 +765,21 @@ mod tests {
         tmp.exec_step();
         assert_eq!(0xfa, tmp.delay);
         assert_eq!(0xfa, tmp.vregs[0xa]);
+    }
+
+    #[test]
+    fn test_exec_ADDI() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0x21;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x1e]));
+        tmp.exec_step();
+        assert_eq!(0x21, tmp.i);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0x21;
+        tmp.i = 0xda;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x1e]));
+        tmp.exec_step();
+        assert_eq!(0x21 + 0xda, tmp.i);
     }
 }
