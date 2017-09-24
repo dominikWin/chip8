@@ -99,8 +99,20 @@ impl Chip8State {
                 let new_val = x_val ^ y_val;
                 self.set_vreg_val(&x, new_val);
             }
-            Opcode::ADDR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::SUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::ADDR(x, y) => {
+                let x_val = self.vreg_val(&x);
+                let y_val = self.vreg_val(&y);
+                let (new_val, carry) = x_val.overflowing_add(y_val);
+                self.set_vreg_val(&x, new_val);
+                self.vregs[0xf] = carry as u8;
+            }
+            Opcode::SUBR(x, y) => {
+                let x_val = self.vreg_val(&x);
+                let y_val = self.vreg_val(&y);
+                let (new_val, carry) = x_val.overflowing_sub(y_val);
+                self.set_vreg_val(&x, new_val);
+                self.vregs[0xf] = carry as u8;
+            }
             Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RSUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -454,5 +466,83 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0x7a, 0xab]));
         tmp.exec_step();
         assert_eq!(0xab + 0x32, tmp.vregs[0xa]);
+    }
+
+    #[test]
+    fn test_exec_ADDR() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x5;
+        tmp.vregs[0x2] = 0x2;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
+        tmp.exec_step();
+        assert_eq!(0x7, tmp.vregs[0x1]);
+        assert_eq!(0x2, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x34;
+        tmp.vregs[0x2] = 0x24;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
+        tmp.exec_step();
+        assert_eq!(0x34 + 0x24, tmp.vregs[0x1]);
+        assert_eq!(0x24, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0xff;
+        tmp.vregs[0x2] = 0x01;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
+        tmp.exec_step();
+        assert_eq!(0x0, tmp.vregs[0x1]);
+        assert_eq!(0x1, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0xff;
+        tmp.vregs[0x2] = 0x05;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
+        tmp.exec_step();
+        assert_eq!(0x4, tmp.vregs[0x1]);
+        assert_eq!(0x5, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+    }
+
+    #[test]
+    fn test_exec_SUBR() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x5;
+        tmp.vregs[0x2] = 0x2;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
+        tmp.exec_step();
+        assert_eq!(0x3, tmp.vregs[0x1]);
+        assert_eq!(0x2, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0xfa;
+        tmp.vregs[0x2] = 0x23;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
+        tmp.exec_step();
+        assert_eq!(0xfa - 0x23, tmp.vregs[0x1]);
+        assert_eq!(0x23, tmp.vregs[0x2]);
+        assert_eq!(0x0, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x5;
+        tmp.vregs[0x2] = 0x6;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
+        tmp.exec_step();
+        assert_eq!(0xff, tmp.vregs[0x1]);
+        assert_eq!(0x6, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x1] = 0x5;
+        tmp.vregs[0x2] = 0x7;
+        tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
+        tmp.exec_step();
+        assert_eq!(0xfe, tmp.vregs[0x1]);
+        assert_eq!(0x7, tmp.vregs[0x2]);
+        assert_eq!(0x1, tmp.vregs[0xf]);
     }
 }
