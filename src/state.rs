@@ -38,11 +38,19 @@ impl Chip8State {
     pub fn exec_step(&mut self) {
         let instruction: u16 = ((self.mem[self.pc as usize] as u16) << 8) |
             ((self.mem[self.pc as usize + 1]) as u16);
-        let opcode = Opcode::new(instruction).unwrap();
+        let opcode = Opcode::new(instruction);
+        if let None = opcode {
+            panic!("Failed to decode instruction {:x}", instruction);
+        }
+        let opcode = opcode.unwrap();
+        let mut skip_inc_pc = false;
         match opcode {
             Opcode::CLS => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RET => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::JMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::JMP(n) => {
+                self.pc = n;
+                skip_inc_pc = true;
+            }
             Opcode::CALL(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPNEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -74,6 +82,10 @@ impl Chip8State {
             Opcode::BCD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RDUMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::RLOAD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+        }
+        info!("Executed instruction {:?} at {:x}", opcode, self.pc);
+        if !skip_inc_pc {
+            self.pc += 2;
         }
     }
 }
@@ -211,5 +223,14 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.sound = 0x34;
         assert_ne!(Chip8State::new(), tmp);
+    }
+
+    #[test]
+    fn test_exec_JMP() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x0200, tmp.pc);
+        tmp.load_program(&Chip8Program::new(&[0x1a, 0xbc]));
+        tmp.exec_step();
+        assert_eq!(0x0abc, tmp.pc);
     }
 }
