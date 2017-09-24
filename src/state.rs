@@ -102,7 +102,7 @@ impl Chip8State {
             Opcode::ADDR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::RSUB(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RSUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPRNEQ(x, y) => {
                 if self.vreg_val(&x) != self.vreg_val(&y) {

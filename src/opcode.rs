@@ -19,7 +19,7 @@ pub enum Opcode {
     ADDR(VReg, VReg),
     SUBR(VReg, VReg),
     SR(VReg, VReg),
-    RSUB(VReg, VReg),
+    RSUBR(VReg, VReg),
     SL(VReg, VReg),
     SKIPRNEQ(VReg, VReg),
     SI(u16),
@@ -92,7 +92,7 @@ impl Opcode {
                 from_int(get_x(n)).unwrap(),
                 from_int(get_y(n)).unwrap(),
             )),
-            n @ 0x8000 ... 0x8fff if n & 0x000f == 7 => Some(Opcode::RSUB(
+            n @ 0x8000 ... 0x8fff if n & 0x000f == 7 => Some(Opcode::RSUBR(
                 from_int(get_x(n)).unwrap(),
                 from_int(get_y(n)).unwrap(),
             )),
@@ -170,7 +170,7 @@ impl Opcode {
     //            Opcode::ADDR(_, _) => "ADDR",
     //            Opcode::SUBR(_, _) => "SUBR",
     //            Opcode::SR(_, _) => "SR",
-    //            Opcode::RSUB(_, _) => "RSUB",
+    //            Opcode::RSUBR(_, _) => "RSUBR",
     //            Opcode::SL(_, _) => "SL",
     //            Opcode::SKIPRNEQ(_, _) => "SKIPRNEQ",
     //            Opcode::SI(_) => "SI",
@@ -209,7 +209,7 @@ impl Opcode {
             Opcode::ADDR(ref x, ref y) => format!("ADDR {}, {}", x, y),
             Opcode::SUBR(ref x, ref y) => format!("SUBR {}, {}", x, y),
             Opcode::SR(ref x, ref y) => format!("SR {}, {}", x, y),
-            Opcode::RSUB(ref x, ref y) => format!("RSUB {}, {}", x, y),
+            Opcode::RSUBR(ref x, ref y) => format!("RSUBR {}, {}", x, y),
             Opcode::SL(ref x, ref y) => format!("SL {}, {}", x, y),
             Opcode::SKIPRNEQ(ref x, ref y) => format!("SKIPRNEQ {}, {}", x, y),
             Opcode::SI(ref i) => format!("SI ${:X}", i),
@@ -264,7 +264,7 @@ impl Opcode {
             Opcode::SR(ref x, ref y) => {
                 0x8006 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
             }
-            Opcode::RSUB(ref x, ref y) => {
+            Opcode::RSUBR(ref x, ref y) => {
                 0x8007 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
             }
             Opcode::SL(ref x, ref y) => {
@@ -482,15 +482,15 @@ mod tests {
         );
 
         assert_eq!(
-            Some(Opcode::RSUB(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
+            Some(Opcode::RSUBR(from_int(0x0).unwrap(), from_int(0x4).unwrap())),
             Opcode::new(0x8047)
         );
         assert_eq!(
-            Some(Opcode::RSUB(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
+            Some(Opcode::RSUBR(from_int(0xc).unwrap(), from_int(0x0).unwrap())),
             Opcode::new(0x8c07)
         );
         assert_eq!(
-            Some(Opcode::RSUB(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
+            Some(Opcode::RSUBR(from_int(0xf).unwrap(), from_int(0xf).unwrap())),
             Opcode::new(0x8ff7)
         );
 
@@ -798,7 +798,7 @@ mod tests {
         );
 
         assert_eq!(
-            "RSUB VC, VF".to_string(),
+            "RSUBR VC, VF".to_string(),
             Opcode::new(0x8cf7).unwrap().to_asm()
         );
 
