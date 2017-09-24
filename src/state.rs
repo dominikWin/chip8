@@ -1,6 +1,7 @@
 use program::Chip8Program;
 use std::fmt;
 use std::cmp;
+use opcode::Opcode;
 
 pub struct Chip8State {
     pub vregs: [u8; 16],
@@ -31,6 +32,48 @@ impl Chip8State {
             self.mem[addr] = ((instruction & 0xff00) >> 8) as u8;
             self.mem[addr + 1] = (instruction & 0x00ff) as u8;
             addr += 2;
+        }
+    }
+
+    pub fn exec_step(&mut self) {
+        let instruction: u16 = ((self.mem[self.pc as usize] as u16) << 8) |
+            ((self.mem[self.pc as usize + 1]) as u16);
+        let opcode = Opcode::new(instruction).unwrap();
+        match opcode {
+            Opcode::CLS => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RET => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::JMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::CALL(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPNEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPREQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::MOV(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::ADD(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::MOVR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::OR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::AND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::XOR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::ADDR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SUBR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RSUB(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SL(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPRNEQ(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::PCN(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RAND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPKNEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::GDELAY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::GKEY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SDELAY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SSND(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::ADDI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SPRITE(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::BCD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RDUMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RLOAD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
         }
     }
 }
