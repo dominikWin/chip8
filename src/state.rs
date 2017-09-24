@@ -156,9 +156,15 @@ impl Chip8State {
             Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKNEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::GDELAY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::GDELAY(x) => {
+                let delay = self.delay;
+                self.set_vreg_val(&x, delay);
+            }
             Opcode::GKEY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::SDELAY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SDELAY(x) => {
+                let delay = self.vreg_val(&x);
+                self.delay = delay;
+            }
             Opcode::SSND(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::ADDI(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SPRITE(_) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -722,5 +728,37 @@ mod tests {
     #[bench]
     fn bench_random(b: &mut Bencher) {
         b.iter(|| random(0xff));
+    }
+
+    #[test]
+    fn test_exec_GDELAY() {
+        let mut tmp = Chip8State::new();
+        tmp.delay = 0x21;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x07]));
+        tmp.exec_step();
+        assert_eq!(0x21, tmp.vregs[0xa]);
+
+        let mut tmp = Chip8State::new();
+        tmp.delay = 0xfa;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x07]));
+        tmp.exec_step();
+        assert_eq!(0xfa, tmp.vregs[0xa]);
+    }
+
+    #[test]
+    fn test_exec_SDELAY() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0x21;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x15]));
+        tmp.exec_step();
+        assert_eq!(0x21, tmp.delay);
+        assert_eq!(0x21, tmp.vregs[0xa]);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0xa] = 0xfa;
+        tmp.load_program(&Chip8Program::new(&[0xfa, 0x15]));
+        tmp.exec_step();
+        assert_eq!(0xfa, tmp.delay);
+        assert_eq!(0xfa, tmp.vregs[0xa]);
     }
 }
