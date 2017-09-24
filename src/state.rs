@@ -71,7 +71,7 @@ impl Chip8State {
                     skip_inc_pc = true;
                 }
             }
-            Opcode::MOV(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::MOV(x, n) => self.set_vreg_val(x, n),
             Opcode::ADD(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::MOVR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::OR(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -111,6 +111,10 @@ impl Chip8State {
 
     fn vreg_val(&self, vreg: VReg) -> u8 {
         self.vregs[vreg.v as usize]
+    }
+
+    fn set_vreg_val(&mut self, vreg: VReg, val: u8) {
+        self.vregs[vreg.v as usize] = val;
     }
 }
 
@@ -327,5 +331,14 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0xaa, 0xbc]));
         tmp.exec_step();
         assert_eq!(0x0abc, tmp.i);
+    }
+
+    #[test]
+    fn test_exec_MOV() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(0x00, tmp.vregs[5]);
+        tmp.load_program(&Chip8Program::new(&[0x65, 0xab]));
+        tmp.exec_step();
+        assert_eq!(0xab, tmp.vregs[5]);
     }
 }
