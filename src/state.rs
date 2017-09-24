@@ -172,6 +172,7 @@ impl cmp::PartialEq for Chip8State {
     }
 }
 
+#[allow(non_snake_case)]
 #[cfg(test)]
 mod tests {
     use super::*;
