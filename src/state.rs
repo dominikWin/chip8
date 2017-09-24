@@ -143,7 +143,10 @@ impl Chip8State {
                 }
             }
             Opcode::SI(n) => self.i = n,
-            Opcode::PCN(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::JMPR(n) => {
+                self.pc = n + (self.vregs[0x0] as u16);
+                skip_inc_pc = true;
+            }
             Opcode::RAND(_, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
@@ -661,5 +664,25 @@ mod tests {
         assert_eq!(0b10101000, tmp.vregs[0xa]);
         assert_eq!(0b10101000, tmp.vregs[0x8]);
         assert_eq!(0x0, tmp.vregs[0xf]);
+    }
+
+    #[test]
+    fn test_exec_JMPR() {
+        let mut tmp = Chip8State::new();
+        tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
+        tmp.exec_step();
+        assert_eq!(0x0abc, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x0] = 0x2;
+        tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
+        tmp.exec_step();
+        assert_eq!(0x0abc + 0x2, tmp.pc);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x0] = 0xad;
+        tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
+        tmp.exec_step();
+        assert_eq!(0x0abc + 0xad, tmp.pc);
     }
 }

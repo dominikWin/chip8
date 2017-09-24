@@ -23,7 +23,7 @@ pub enum Opcode {
     SL(VReg, VReg),
     SKIPRNEQ(VReg, VReg),
     SI(u16),
-    PCN(u16),
+    JMPR(u16),
     RAND(VReg, u8),
     DRAW(VReg, VReg, u8),
     SKIPKEQ(VReg),
@@ -105,7 +105,7 @@ impl Opcode {
                 from_int(get_y(n)).unwrap(),
             )),
             n @ 0xa000 ... 0xafff => Some(Opcode::SI(n & 0x0fff)),
-            n @ 0xb000 ... 0xbfff => Some(Opcode::PCN(n & 0x0fff)),
+            n @ 0xb000 ... 0xbfff => Some(Opcode::JMPR(n & 0x0fff)),
             n @ 0xc000 ... 0xcfff => Some(Opcode::RAND(
                 from_int(get_x(n)).unwrap(),
                 (n & 0x00ff) as u8,
@@ -174,7 +174,7 @@ impl Opcode {
     //            Opcode::SL(_, _) => "SL",
     //            Opcode::SKIPRNEQ(_, _) => "SKIPRNEQ",
     //            Opcode::SI(_) => "SI",
-    //            Opcode::PCN(_) => "PCN",
+    //            Opcode::JMPR(_) => "JMPR",
     //            Opcode::RAND(_, _) => "RAND",
     //            Opcode::DRAW(_, _, _) => "DRAW",
     //            Opcode::SKIPKEQ(_) => "SKIPKEQ",
@@ -213,7 +213,7 @@ impl Opcode {
             Opcode::SL(ref x, ref y) => format!("SL {}, {}", x, y),
             Opcode::SKIPRNEQ(ref x, ref y) => format!("SKIPRNEQ {}, {}", x, y),
             Opcode::SI(ref i) => format!("SI ${:X}", i),
-            Opcode::PCN(ref i) => format!("PCN ${:X}", i),
+            Opcode::JMPR(ref i) => format!("JMPR ${:X}", i),
             Opcode::RAND(ref x, ref n) => format!("RAND {}, #${:X}", x, n),
             Opcode::DRAW(ref x, ref y, ref n) => format!("DRAW {}, {}, #${:X}", x, y, n),
             Opcode::SKIPKEQ(ref x) => format!("SKIPKEQ {}", x),
@@ -274,7 +274,7 @@ impl Opcode {
                 0x9000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16
             }
             Opcode::SI(ref n) => 0xa000 | *n as u16,
-            Opcode::PCN(ref n) => 0xb000 | *n as u16,
+            Opcode::JMPR(ref n) => 0xb000 | *n as u16,
             Opcode::RAND(ref x, ref n) => 0xc000 | ((x.v as u16) << 8) as u16 | *n as u16,
             Opcode::DRAW(ref x, ref y, ref n) => {
                 0xd000 | ((x.v as u16) << 8) as u16 | ((y.v as u16) << 4) as u16 | *n as u16
@@ -535,9 +535,9 @@ mod tests {
         assert_eq!(Some(Opcode::SI(0x01af)), Opcode::new(0xa1af));
         assert_eq!(Some(Opcode::SI(0x0fff)), Opcode::new(0xafff));
 
-        assert_eq!(Some(Opcode::PCN(0x0000)), Opcode::new(0xb000));
-        assert_eq!(Some(Opcode::PCN(0x01af)), Opcode::new(0xb1af));
-        assert_eq!(Some(Opcode::PCN(0x0fff)), Opcode::new(0xbfff));
+        assert_eq!(Some(Opcode::JMPR(0x0000)), Opcode::new(0xb000));
+        assert_eq!(Some(Opcode::JMPR(0x01af)), Opcode::new(0xb1af));
+        assert_eq!(Some(Opcode::JMPR(0x0fff)), Opcode::new(0xbfff));
 
         assert_eq!(
             Some(Opcode::RAND(from_int(0x0).unwrap(), 0x32)),
@@ -815,7 +815,7 @@ mod tests {
         assert_eq!("SI $F80".to_string(), Opcode::new(0xaf80).unwrap().to_asm());
 
         assert_eq!(
-            "PCN $F80".to_string(),
+            "JMPR $F80".to_string(),
             Opcode::new(0xbf80).unwrap().to_asm()
         );
 
