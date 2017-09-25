@@ -174,8 +174,18 @@ impl Chip8State {
             }
             Opcode::SPRITE(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::BCD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::RDUMP(_) => panic!("Call to non-implemented instruction {:?}", opcode),
-            Opcode::RLOAD(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RDUMP(x) => {
+                for reg in 0..x.v + 1 {
+                    self.mem[(self.i + reg as u16) as usize] = self.vregs[reg as usize];
+                }
+                self.i += x.v as u16 + 1;
+            }
+            Opcode::RLOAD(x) => {
+                for reg in 0..x.v + 1 {
+                    self.vregs[reg as usize] = self.mem[(self.i + reg as u16) as usize];
+                }
+                self.i += x.v as u16 + 1;
+            }
         }
         if !skip_inc_pc {
             self.pc += 2;
@@ -781,5 +791,43 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x1e]));
         tmp.exec_step();
         assert_eq!(0x21 + 0xda, tmp.i);
+    }
+
+    #[test]
+    fn test_exec_RDUMP() {
+        let mut tmp = Chip8State::new();
+        for i in 0..16 {
+            tmp.vregs[i] = i as u8 * 2;
+        }
+        tmp.i = 0x520;
+        tmp.load_program(&Chip8Program::new(&[0xf8, 0x55]));
+        tmp.exec_step();
+        for i in 0..0x9 {
+            assert_eq!(tmp.mem[i as usize + 0x520], i * 2);
+        }
+        for i in 0x9..16 {
+            assert_ne!(tmp.mem[i as usize + 0x520], i * 2);
+            assert_eq!(tmp.mem[i as usize + 0x520], 0);
+        }
+        assert_eq!(tmp.i, 0x520 + 0x9);
+    }
+
+    #[test]
+    fn test_exec_RLOAD() {
+        let mut tmp = Chip8State::new();
+        for i in 0..16 {
+            tmp.mem[i as usize + 0x520] = i as u8 * 2;
+        }
+        tmp.i = 0x520;
+        tmp.load_program(&Chip8Program::new(&[0xf8, 0x65]));
+        tmp.exec_step();
+        for i in 0..0x9 {
+            assert_eq!(tmp.vregs[i], i as u8 * 2);
+        }
+        for i in 0x9..16 {
+            assert_ne!(tmp.vregs[i], i as u8 * 2);
+            assert_eq!(tmp.vregs[i], 0);
+        }
+        assert_eq!(tmp.i, 0x520 + 0x9);
     }
 }
