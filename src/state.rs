@@ -9,6 +9,8 @@ use rand::Rng;
 #[cfg(test)]
 use test::Bencher;
 
+const FONT_START: u16 = 0x100;
+
 pub struct Chip8State {
     pub vregs: [u8; 16],
     pub i: u16,
@@ -21,7 +23,7 @@ pub struct Chip8State {
 
 impl Chip8State {
     pub fn new() -> Chip8State {
-        Chip8State {
+        let mut state = Chip8State {
             vregs: [0; 16],
             i: 0x0000,
             sp: 0x0EA0,
@@ -29,7 +31,9 @@ impl Chip8State {
             delay: 0,
             sound: 0,
             mem: [0; 0x1000],
-        }
+        };
+        state.load_font();
+        return state;
     }
 
     pub fn load_program(&mut self, program: &Chip8Program) {
@@ -39,6 +43,138 @@ impl Chip8State {
             self.mem[addr + 1] = (instruction & 0x00ff) as u8;
             addr += 2;
         }
+    }
+
+    fn load_font(&mut self) {
+        // See http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#2.4 for reference
+
+        // 0
+        let start = FONT_START;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0x90;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 1
+        let start = FONT_START + 1 * 5;
+        self.mem[(start + 0) as usize] = 0x20;
+        self.mem[(start + 1) as usize] = 0x60;
+        self.mem[(start + 2) as usize] = 0x20;
+        self.mem[(start + 3) as usize] = 0x20;
+        self.mem[(start + 4) as usize] = 0x70;
+
+        // 2
+        let start = FONT_START + 2 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x10;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x80;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 3
+        let start = FONT_START + 3 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x10;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x10;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 4
+        let start = FONT_START + 4 * 5;
+        self.mem[(start + 0) as usize] = 0x90;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x10;
+        self.mem[(start + 4) as usize] = 0x10;
+
+        // 5
+        let start = FONT_START + 5 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x80;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x10;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 6
+        let start = FONT_START + 6 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x80;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 7
+        let start = FONT_START + 7 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x10;
+        self.mem[(start + 2) as usize] = 0x20;
+        self.mem[(start + 3) as usize] = 0x40;
+        self.mem[(start + 4) as usize] = 0x40;
+
+        // 8
+        let start = FONT_START + 8 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // 9
+        let start = FONT_START + 9 * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x10;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // a
+        let start = FONT_START + 0xa * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0x90;
+
+        // b
+        let start = FONT_START + 0xb * 5;
+        self.mem[(start + 0) as usize] = 0xe0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0xe0;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0xe0;
+
+        // c
+        let start = FONT_START + 0xc * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x80;
+        self.mem[(start + 2) as usize] = 0x80;
+        self.mem[(start + 3) as usize] = 0x80;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // d
+        let start = FONT_START + 0xd * 5;
+        self.mem[(start + 0) as usize] = 0xe0;
+        self.mem[(start + 1) as usize] = 0x90;
+        self.mem[(start + 2) as usize] = 0x90;
+        self.mem[(start + 3) as usize] = 0x90;
+        self.mem[(start + 4) as usize] = 0xe0;
+
+        // e
+        let start = FONT_START + 0xe * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x80;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x80;
+        self.mem[(start + 4) as usize] = 0xf0;
+
+        // f
+        let start = FONT_START + 0xf * 5;
+        self.mem[(start + 0) as usize] = 0xf0;
+        self.mem[(start + 1) as usize] = 0x80;
+        self.mem[(start + 2) as usize] = 0xf0;
+        self.mem[(start + 3) as usize] = 0x80;
+        self.mem[(start + 4) as usize] = 0x80;
     }
 
     pub fn exec_step(&mut self) {
