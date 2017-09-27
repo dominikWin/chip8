@@ -308,7 +308,11 @@ impl Chip8State {
                 let sum = self.i + self.vreg_val(&x) as u16;
                 self.i = sum;
             }
-            Opcode::SPRITE(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SPRITE(x) => {
+                let c = self.vreg_val(&x);
+                assert!(c <= 0xf);
+                self.i = (c * 5) as u16 + FONT_START;
+            }
             Opcode::BCD(x) => {
                 let val = self.vreg_val(&x);
                 let hundreds: u8 = val / 100;
@@ -1016,5 +1020,20 @@ mod tests {
         assert_eq!(3, tmp.mem[0x522]);
         assert_eq!(2, tmp.mem[0x523]);
         assert_eq!(0x521, tmp.i);
+    }
+
+    #[test]
+    fn test_exec_SPRITE() {
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x5] = 0x0;
+        tmp.load_program(&Chip8Program::new(&[0xf5, 0x29]));
+        tmp.exec_step();
+        assert_eq!(FONT_START, tmp.i);
+
+        let mut tmp = Chip8State::new();
+        tmp.vregs[0x5] = 0xa;
+        tmp.load_program(&Chip8Program::new(&[0xf5, 0x29]));
+        tmp.exec_step();
+        assert_eq!(FONT_START + 5 * 0xa, tmp.i);
     }
 }
