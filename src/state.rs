@@ -11,11 +11,12 @@ use test::Bencher;
 
 const FONT_START: u16 = 0x100;
 const DISP_START: u16 = 0xF00;
+const STACK_START: u16 = 0xEA0;
 
 pub struct Chip8State {
     pub vregs: [u8; 16],
     pub i: u16,
-    pub sp: u16,
+    pub sp: u8,
     pub pc: u16,
     pub delay: u8,
     pub sound: u8,
@@ -27,7 +28,7 @@ impl Chip8State {
         let mut state = Chip8State {
             vregs: [0; 16],
             i: 0x0000,
-            sp: 0x0EA0,
+            sp: 0,
             pc: 0x0200,
             delay: 0,
             sound: 0,
@@ -196,7 +197,12 @@ impl Chip8State {
                 self.pc = n;
                 skip_inc_pc = true;
             }
-            Opcode::CALL(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::CALL(n) => {
+                let pc = self.pc;
+                self.stack_push(pc);
+                self.pc = n;
+                skip_inc_pc = true;
+            },
             Opcode::SKIPEQ(x, n) => {
                 if self.vreg_val(&x) == n {
                     self.pc += 4;
@@ -354,6 +360,15 @@ impl Chip8State {
 
     fn set_vreg_val(&mut self, vreg: &VReg, val: u8) {
         self.vregs[vreg.v as usize] = val;
+    }
+
+    fn stack_push(&mut self, val: u16) {
+        assert_ne!(self.sp, 16);
+        let upper: u8 = (val >> 8) as u8;
+        let lower: u8 = (val & 0xff) as u8;
+        self.mem[(STACK_START + (self.sp * 2) as u16) as usize] = upper;
+        self.mem[(STACK_START + (self.sp * 2 + 1) as u16) as usize] = lower;
+        self.sp += 1;
     }
 }
 
@@ -1064,5 +1079,44 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0xfb, 0x18]));
         tmp.exec_step();
         assert_eq!(tmp.sound, 0x32);
+    }
+
+    #[test]
+    fn test_exec_CALL() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(tmp.pc, 0x200);
+        assert_eq!(tmp.sp, 0);
+        tmp.load_program(&Chip8Program::new(&[0x24, 0x56]));
+        tmp.exec_step();
+        assert_eq!(tmp.pc, 0x456);
+        assert_eq!(tmp.sp, 1);
+        assert_eq!(tmp.mem[STACK_START as usize], 0x02);
+        assert_eq!(tmp.mem[STACK_START as usize + 1], 0x00);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(tmp.pc, 0x200);
+        assert_eq!(tmp.sp, 0);
+        tmp.load_program(&Chip8Program::new(&[0x00, 0x00, 0x24, 0x56]));
+        tmp.pc += 2;
+        tmp.exec_step();
+        assert_eq!(tmp.pc, 0x456);
+        assert_eq!(tmp.sp, 1);
+        assert_eq!(tmp.mem[STACK_START as usize], 0x02);
+        assert_eq!(tmp.mem[STACK_START as usize + 1], 0x02);
+
+        let mut tmp = Chip8State::new();
+        assert_eq!(tmp.pc, 0x200);
+        assert_eq!(tmp.sp, 0);
+        tmp.load_program(&Chip8Program::new(&[0x22, 0x02, 0x22, 0x34]));
+        tmp.exec_step();
+        assert_eq!(tmp.pc, 0x202);
+        assert_eq!(tmp.sp, 1);
+        assert_eq!(tmp.mem[STACK_START as usize], 0x02);
+        assert_eq!(tmp.mem[STACK_START as usize + 1], 0x00);
+        tmp.exec_step();
+        assert_eq!(tmp.pc, 0x0234);
+        assert_eq!(tmp.sp, 2);
+        assert_eq!(tmp.mem[STACK_START as usize + 2], 0x02);
+        assert_eq!(tmp.mem[STACK_START as usize + 3], 0x02);
     }
 }
