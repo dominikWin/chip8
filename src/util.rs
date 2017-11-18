@@ -1,3 +1,30 @@
+use program::Chip8Program;
+use std::io;
+use std::fs;
+use clap::ArgMatches;
+
+pub fn program_from_jnput(matches: &ArgMatches) -> Result<Chip8Program, io::Error> {
+    let input: Box<io::Read> = {
+        let input_val = matches.value_of("input").unwrap();
+        if input_val == "-" {
+            Box::new(io::stdin())
+        } else {
+            let file = fs::File::open(input_val);
+            if let Err(e) = file {
+                println!(
+                    "File {} can't be opened: {}",
+                    matches.value_of("input").unwrap(),
+                    e
+                );
+                return Err(e);
+            }
+            Box::new(file.unwrap())
+        }
+    };
+
+    Chip8Program::from(input)
+}
+
 pub fn filled_hex(n: u16) -> String {
     format!(
         "{:x}{:x}{:x}{:x}",

@@ -1,30 +1,10 @@
 use clap::ArgMatches;
-use std::io;
-use std::fs;
 use util::*;
 use opcode::Opcode;
 use program::Chip8Program;
 
 pub fn cmd_decompile(matches: &ArgMatches) {
-    let input: Box<io::Read> = {
-        let input_val = matches.value_of("input").unwrap();
-        if input_val == "-" {
-            Box::new(io::stdin())
-        } else {
-            let file = fs::File::open(input_val);
-            if let Err(e) = file {
-                println!(
-                    "File {} can't be opened: {}",
-                    matches.value_of("input").unwrap(),
-                    e
-                );
-                return;
-            }
-            Box::new(file.unwrap())
-        }
-    };
-
-    let program = Chip8Program::from(input);
+    let program = program_from_jnput(matches);
 
     if let Err(e) = program {
         println!(
