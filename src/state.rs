@@ -192,7 +192,11 @@ impl Chip8State {
             Opcode::CLS => for i in DISP_START..0xFFF + 1 {
                 self.mem[i as usize] = 0x00;
             },
-            Opcode::RET => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::RET => {
+                let pc = self.stack_pop();
+                self.pc = pc;
+                skip_inc_pc = true;
+            },
             Opcode::JMP(n) => {
                 self.pc = n;
                 skip_inc_pc = true;
@@ -369,6 +373,15 @@ impl Chip8State {
         self.mem[(STACK_START + (self.sp * 2) as u16) as usize] = upper;
         self.mem[(STACK_START + (self.sp * 2 + 1) as u16) as usize] = lower;
         self.sp += 1;
+    }
+
+    fn stack_pop(&mut self) -> u16 {
+        assert_ne!(self.sp, 0);
+        self.sp -= 1;
+        let upper = self.mem[(STACK_START + (self.sp * 2) as u16) as usize];
+        let lower = self.mem[(STACK_START + (self.sp * 2 + 1) as u16) as usize];
+
+        ((upper as u16) << 8) | (lower as u16)
     }
 }
 
@@ -1118,5 +1131,17 @@ mod tests {
         assert_eq!(tmp.sp, 2);
         assert_eq!(tmp.mem[STACK_START as usize + 2], 0x02);
         assert_eq!(tmp.mem[STACK_START as usize + 3], 0x02);
+    }
+
+    #[test]
+    fn test_exec_RET() {
+        let mut tmp = Chip8State::new();
+        tmp.mem[STACK_START as usize] = 0x05;
+        tmp.mem[STACK_START as usize + 1] = 0x67;
+        tmp.sp = 1;
+        tmp.load_program(&Chip8Program::new(&[0x00, 0xee]));
+        tmp.exec_step();
+        assert_eq!(tmp.pc, 0x0567);
+        assert_eq!(tmp.sp, 0);
     }
 }
