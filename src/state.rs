@@ -306,7 +306,10 @@ impl Chip8State {
                 let delay = self.vreg_val(&x);
                 self.delay = delay;
             }
-            Opcode::SSND(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SSND(x) => {
+                let snd = self.vreg_val(&x);
+                self.sound = snd;
+            },
             Opcode::ADDI(x) => {
                 let sum = self.i + self.vreg_val(&x) as u16;
                 self.i = sum;
@@ -1051,5 +1054,15 @@ mod tests {
         for i in 0xf00..0xfff + 1 {
             assert_eq!(tmp.mem[i as usize], 0x00);
         }
+    }
+
+    #[test]
+    fn test_exec_SSND() {
+        let mut tmp = Chip8State::new();
+        assert_eq!(tmp.sound, 0x00);
+        tmp.vregs[0xb] = 0x32;
+        tmp.load_program(&Chip8Program::new(&[0xfb, 0x18]));
+        tmp.exec_step();
+        assert_eq!(tmp.sound, 0x32);
     }
 }
