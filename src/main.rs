@@ -19,6 +19,7 @@ mod program;
 
 fn main() {
     env_logger::init().unwrap();
+
     let matches = App::new("chip8")
         .version("0.1.0")
         .author("Dominik Winecki <dominikwinecki@gmail.com>")
@@ -26,13 +27,20 @@ fn main() {
         .subcommand(
             SubCommand::with_name("decompile")
                 .about("Prints the decompiled file to stdout")
-                .arg(
-                    Arg::with_name("input")
-                        .short("i")
-                        .value_name("INPUT")
-                        .help("The file to be decompiled. If - then stdin is read.")
-                        .required(true),
-                ),
+                .arg(Arg::with_name("input")
+                    .short("i")
+                    .value_name("INPUT")
+                    .help("The file to be decompiled. If - then stdin is read.")
+                    .required(true)),
+        )
+        .subcommand(
+            SubCommand::with_name("exec")
+                .about("Run the program with an ncurses interface")
+                .arg(Arg::with_name("input")
+                    .short("i")
+                    .value_name("INPUT")
+                    .help("The file to be decompiled. If - then stdin is read.")
+                    .required(true)),
         )
         .get_matches();
 
@@ -46,6 +54,9 @@ fn main() {
     match matches.subcommand_name().unwrap() {
         "decompile" => commands::decompile::cmd_decompile(
             &matches.subcommand_matches("decompile").unwrap(),
+        ),
+        "exec" => commands::exec::cmd_exec(
+            &matches.subcommand_matches("exec").unwrap(),
         ),
         other => panic!("Invalid subcommand {}", other),
     }
