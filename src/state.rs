@@ -10,6 +10,7 @@ use rand::Rng;
 use test::Bencher;
 
 const FONT_START: u16 = 0x100;
+const DISP_START: u16 = 0xF00;
 
 pub struct Chip8State {
     pub vregs: [u8; 16],
@@ -187,7 +188,9 @@ impl Chip8State {
         let opcode = opcode.unwrap();
         let mut skip_inc_pc = false;
         match opcode {
-            Opcode::CLS => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::CLS => for i in DISP_START..0xFFF + 1 {
+                self.mem[i as usize] = 0x00;
+            },
             Opcode::RET => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::JMP(n) => {
                 self.pc = n;
@@ -1035,5 +1038,18 @@ mod tests {
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x29]));
         tmp.exec_step();
         assert_eq!(FONT_START + 5 * 0xa, tmp.i);
+    }
+
+    #[test]
+    fn test_exec_CLS() {
+        let mut tmp = Chip8State::new();
+        for i in 0xf00..0xfff + 1 {
+            tmp.mem[i as usize] = 0b10101010;
+        }
+        tmp.load_program(&Chip8Program::new(&[0x00, 0xe0]));
+        tmp.exec_step();
+        for i in 0xf00..0xfff + 1 {
+            assert_eq!(tmp.mem[i as usize], 0x00);
+        }
     }
 }
