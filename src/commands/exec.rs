@@ -1,6 +1,8 @@
 use clap::ArgMatches;
 use util::*;
 use program::Chip8Program;
+use display;
+
 
 pub fn cmd_exec(matches: &ArgMatches) {
     let program = program_from_jnput(matches);
@@ -17,4 +19,10 @@ pub fn cmd_exec(matches: &ArgMatches) {
     let program = program.unwrap();
 
     println!("Done!");
+
+    display::init_display();
+
+    display::update_display();
+
+    display::close_display();
 }

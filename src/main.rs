@@ -6,6 +6,7 @@ extern crate clap;
 extern crate log;
 extern crate env_logger;
 extern crate rand;
+extern crate ncurses;
 
 use clap::{Arg, App, SubCommand};
 
@@ -16,6 +17,7 @@ mod commands;
 mod util;
 mod state;
 mod program;
+mod display;
 
 fn main() {
     env_logger::init().unwrap();
