@@ -2,6 +2,7 @@ use clap::ArgMatches;
 use util::*;
 use program::Chip8Program;
 use display;
+use state::Chip8State;
 
 
 pub fn cmd_exec(matches: &ArgMatches) {
@@ -18,11 +19,18 @@ pub fn cmd_exec(matches: &ArgMatches) {
 
     let program = program.unwrap();
 
+    let mut state: Chip8State = Chip8State::new();
+
+    state.load_program(&program);
+
     println!("Done!");
 
     display::init_display();
 
-    display::update_display();
+    loop {
+        display::update_display(&state);
+        state.exec_step();
+    }
 
     display::close_display();
 }

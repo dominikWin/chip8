@@ -5,6 +5,7 @@ use opcode::Opcode;
 use register::VReg;
 use rand;
 use rand::Rng;
+use std::ops::Add;
 
 #[cfg(test)]
 use test::Bencher;
@@ -179,12 +180,16 @@ impl Chip8State {
         self.mem[(start + 4) as usize] = 0x80;
     }
 
-    pub fn exec_step(&mut self) {
+    pub fn get_next_opcode(&self) -> Option<Opcode> {
         let instruction: u16 = ((self.mem[self.pc as usize] as u16) << 8) |
             ((self.mem[self.pc as usize + 1]) as u16);
-        let opcode = Opcode::new(instruction);
+        Opcode::new(instruction)
+    }
+
+    pub fn exec_step(&mut self) {
+        let opcode = self.get_next_opcode();
         if let None = opcode {
-            panic!("Failed to decode instruction {:x}", instruction);
+            panic!("Failed to decode instruction {:x}", self.pc);
         }
         let opcode = opcode.unwrap();
         let mut skip_inc_pc = false;
@@ -228,7 +233,7 @@ impl Chip8State {
             Opcode::MOV(x, n) => self.set_vreg_val(&x, n),
             Opcode::ADD(x, n) => {
                 let x_val = self.vreg_val(&x);
-                let new_val = x_val + n;
+                let (new_val, _) = x_val.overflowing_add(n);
                 self.set_vreg_val(&x, new_val);
             }
             Opcode::MOVR(x, y) => {
@@ -382,6 +387,20 @@ impl Chip8State {
         let lower = self.mem[(STACK_START + (self.sp * 2 + 1) as u16) as usize];
 
         ((upper as u16) << 8) | (lower as u16)
+    }
+
+    fn decode_pixel(x: u8, y: u8) -> (u16, u8) {
+        assert!(x < 64);
+        assert!(y < 32);
+        let addr = DISP_START as usize + (x as usize / 8) + y as usize * 8;
+        assert!(addr <= 0xFFF);
+        let mask = 0x1 << (x % 8);
+        (addr as u16, mask)
+    }
+
+    pub fn pixel_on(&self, x: u8, y: u8) -> bool {
+        let (addr, mask) = Chip8State::decode_pixel(x, y);
+        self.mem[addr as usize] & mask != 0
     }
 }
 
