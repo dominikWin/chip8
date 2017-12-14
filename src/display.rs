@@ -58,7 +58,7 @@ pub fn get_char() -> u8 {
         }
         let c = c.to_ascii_lowercase();
         if c >= 'a' && c <= 'f' {
-            return (c as u8) - 'a' as u8;
+            return (c as u8) - 'a' as u8 + 0xa;
         }
     }
 }
