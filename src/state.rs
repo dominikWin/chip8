@@ -320,8 +320,8 @@ impl Chip8State {
                     for width in 0..8 {
                         let val: bool = row & (1 << 7) != 0;
                         row = row << 1;
-                        let x = self.vreg_val(&x) + width;
-                        let y = self.vreg_val(&y) + height;
+                        let (x, _) = self.vreg_val(&x).overflowing_add(width);
+                        let (y, _) = self.vreg_val(&y).overflowing_add(height);
                         if x < 64 && y < 32 {
                             self.write_pixel(x, y, val);
                         }
@@ -503,6 +503,9 @@ impl cmp::PartialEq for Chip8State {
 #[allow(non_snake_case)]
 #[cfg(test)]
 mod tests {
+
+    fn fake_getchar() -> u8 {0}
+
     use super::*;
 
     #[test]
@@ -609,7 +612,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x1a, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0abc, tmp.pc);
     }
 
@@ -618,13 +621,13 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x30, 0x00]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0204, tmp.pc);
 
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x30, 0x01]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0202, tmp.pc);
     }
 
@@ -633,13 +636,13 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x40, 0x00]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0202, tmp.pc);
 
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x40, 0x01]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0204, tmp.pc);
     }
 
@@ -648,14 +651,14 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x52, 0x20]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0204, tmp.pc);
 
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.vregs[4] = 0x32;
         tmp.load_program(&Chip8Program::new(&[0x52, 0x40]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0202, tmp.pc);
     }
 
@@ -664,14 +667,14 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.load_program(&Chip8Program::new(&[0x92, 0x20]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0202, tmp.pc);
 
         let mut tmp = Chip8State::new();
         assert_eq!(0x0200, tmp.pc);
         tmp.vregs[4] = 0x32;
         tmp.load_program(&Chip8Program::new(&[0x92, 0x40]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0204, tmp.pc);
     }
 
@@ -680,7 +683,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x0000, tmp.i);
         tmp.load_program(&Chip8Program::new(&[0xaa, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0abc, tmp.i);
     }
 
@@ -689,7 +692,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x00, tmp.vregs[5]);
         tmp.load_program(&Chip8Program::new(&[0x65, 0xab]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xab, tmp.vregs[5]);
     }
 
@@ -699,7 +702,7 @@ mod tests {
         tmp.vregs[0xa] = 0xcd;
         assert_eq!(0x00, tmp.vregs[0x7]);
         tmp.load_program(&Chip8Program::new(&[0x87, 0xa0]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xcd, tmp.vregs[0x7]);
         assert_eq!(0xcd, tmp.vregs[0xa]);
 
@@ -707,7 +710,7 @@ mod tests {
         tmp.vregs[0xa] = 0xcd;
         assert_eq!(0x00, tmp.vregs[0x7]);
         tmp.load_program(&Chip8Program::new(&[0x8a, 0x70]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x00, tmp.vregs[0x7]);
         assert_eq!(0x00, tmp.vregs[0xa]);
     }
@@ -718,7 +721,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x21]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x5 | 0x2, tmp.vregs[0x1]);
         assert_eq!(0x2, tmp.vregs[0x2]);
 
@@ -726,7 +729,7 @@ mod tests {
         tmp.vregs[0x1] = 0b01010101;
         tmp.vregs[0x2] = 0b10101010;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x21]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b11111111, tmp.vregs[0x1]);
         assert_eq!(0b10101010, tmp.vregs[0x2]);
     }
@@ -737,7 +740,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x22]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x5 & 0x2, tmp.vregs[0x1]);
         assert_eq!(0x2, tmp.vregs[0x2]);
 
@@ -745,7 +748,7 @@ mod tests {
         tmp.vregs[0x1] = 0b01010101;
         tmp.vregs[0x2] = 0b10101011;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x22]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b00000001, tmp.vregs[0x1]);
         assert_eq!(0b10101011, tmp.vregs[0x2]);
     }
@@ -756,7 +759,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x23]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x5 ^ 0x2, tmp.vregs[0x1]);
         assert_eq!(0x2, tmp.vregs[0x2]);
 
@@ -764,7 +767,7 @@ mod tests {
         tmp.vregs[0x1] = 0b01010101;
         tmp.vregs[0x2] = 0b10101011;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x23]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b11111110, tmp.vregs[0x1]);
         assert_eq!(0b10101011, tmp.vregs[0x2]);
     }
@@ -774,13 +777,13 @@ mod tests {
         let mut tmp = Chip8State::new();
         assert_eq!(0x00, tmp.vregs[0xa]);
         tmp.load_program(&Chip8Program::new(&[0x7a, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xbc, tmp.vregs[0xa]);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0x32;
         tmp.load_program(&Chip8Program::new(&[0x7a, 0xab]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xab + 0x32, tmp.vregs[0xa]);
     }
 
@@ -790,7 +793,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x7, tmp.vregs[0x1]);
         assert_eq!(0x2, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -799,7 +802,7 @@ mod tests {
         tmp.vregs[0x1] = 0x34;
         tmp.vregs[0x2] = 0x24;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x34 + 0x24, tmp.vregs[0x1]);
         assert_eq!(0x24, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -808,7 +811,7 @@ mod tests {
         tmp.vregs[0x1] = 0xff;
         tmp.vregs[0x2] = 0x01;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0, tmp.vregs[0x1]);
         assert_eq!(0x1, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -817,7 +820,7 @@ mod tests {
         tmp.vregs[0x1] = 0xff;
         tmp.vregs[0x2] = 0x05;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x24]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x4, tmp.vregs[0x1]);
         assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -829,7 +832,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x3, tmp.vregs[0x1]);
         assert_eq!(0x2, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -838,7 +841,7 @@ mod tests {
         tmp.vregs[0x1] = 0xfa;
         tmp.vregs[0x2] = 0x23;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfa - 0x23, tmp.vregs[0x1]);
         assert_eq!(0x23, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -847,7 +850,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x6;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xff, tmp.vregs[0x1]);
         assert_eq!(0x6, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -856,7 +859,7 @@ mod tests {
         tmp.vregs[0x1] = 0x5;
         tmp.vregs[0x2] = 0x7;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x25]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfe, tmp.vregs[0x1]);
         assert_eq!(0x7, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -868,7 +871,7 @@ mod tests {
         tmp.vregs[0x1] = 0x2;
         tmp.vregs[0x2] = 0x5;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x3, tmp.vregs[0x1]);
         assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -877,7 +880,7 @@ mod tests {
         tmp.vregs[0x1] = 0x23;
         tmp.vregs[0x2] = 0xfa;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfa - 0x23, tmp.vregs[0x1]);
         assert_eq!(0xfa, tmp.vregs[0x2]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -886,7 +889,7 @@ mod tests {
         tmp.vregs[0x1] = 0x6;
         tmp.vregs[0x2] = 0x5;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xff, tmp.vregs[0x1]);
         assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -895,7 +898,7 @@ mod tests {
         tmp.vregs[0x1] = 0x7;
         tmp.vregs[0x2] = 0x5;
         tmp.load_program(&Chip8Program::new(&[0x81, 0x27]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfe, tmp.vregs[0x1]);
         assert_eq!(0x5, tmp.vregs[0x2]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -906,7 +909,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b10101010;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xa6]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b01010101, tmp.vregs[0xa]);
         assert_eq!(0b01010101, tmp.vregs[0x8]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -914,7 +917,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b10101011;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xa6]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b01010101, tmp.vregs[0xa]);
         assert_eq!(0b01010101, tmp.vregs[0x8]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -922,9 +925,9 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b10101011;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xa6, 0x88, 0xa6]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x1, tmp.vregs[0xf]);
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b00101010, tmp.vregs[0xa]);
         assert_eq!(0b00101010, tmp.vregs[0x8]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -935,7 +938,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b10101010;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xae]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b01010100, tmp.vregs[0xa]);
         assert_eq!(0b01010100, tmp.vregs[0x8]);
         assert_eq!(0x1, tmp.vregs[0xf]);
@@ -943,7 +946,7 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b00101010;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xae]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b01010100, tmp.vregs[0xa]);
         assert_eq!(0b01010100, tmp.vregs[0x8]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -951,9 +954,9 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0b00101010;
         tmp.load_program(&Chip8Program::new(&[0x88, 0xae, 0x88, 0xae]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0, tmp.vregs[0xf]);
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0b10101000, tmp.vregs[0xa]);
         assert_eq!(0b10101000, tmp.vregs[0x8]);
         assert_eq!(0x0, tmp.vregs[0xf]);
@@ -963,19 +966,19 @@ mod tests {
     fn test_exec_JMPR() {
         let mut tmp = Chip8State::new();
         tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0abc, tmp.pc);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0x0] = 0x2;
         tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0abc + 0x2, tmp.pc);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0x0] = 0xad;
         tmp.load_program(&Chip8Program::new(&[0xba, 0xbc]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x0abc + 0xad, tmp.pc);
     }
 
@@ -984,7 +987,7 @@ mod tests {
         fn gen_rand(mask: u8) -> u8 {
             let mut tmp = Chip8State::new();
             tmp.load_program(&Chip8Program::new(&[0xca, mask]));
-            tmp.exec_step();
+            tmp.exec_step(fake_getchar);
             return tmp.vregs[0xa];
         }
 
@@ -1009,13 +1012,13 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.delay = 0x21;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x07]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x21, tmp.vregs[0xa]);
 
         let mut tmp = Chip8State::new();
         tmp.delay = 0xfa;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x07]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfa, tmp.vregs[0xa]);
     }
 
@@ -1024,14 +1027,14 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0x21;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x15]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x21, tmp.delay);
         assert_eq!(0x21, tmp.vregs[0xa]);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0xfa;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x15]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0xfa, tmp.delay);
         assert_eq!(0xfa, tmp.vregs[0xa]);
     }
@@ -1041,14 +1044,14 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0x21;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x1e]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x21, tmp.i);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0xa] = 0x21;
         tmp.i = 0xda;
         tmp.load_program(&Chip8Program::new(&[0xfa, 0x1e]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0x21 + 0xda, tmp.i);
     }
 
@@ -1060,7 +1063,7 @@ mod tests {
         }
         tmp.i = 0x520;
         tmp.load_program(&Chip8Program::new(&[0xf8, 0x55]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         for i in 0..0x9 {
             assert_eq!(tmp.mem[i as usize + 0x520], i * 2);
         }
@@ -1079,7 +1082,7 @@ mod tests {
         }
         tmp.i = 0x520;
         tmp.load_program(&Chip8Program::new(&[0xf8, 0x65]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         for i in 0..0x9 {
             assert_eq!(tmp.vregs[i], i as u8 * 2);
         }
@@ -1096,7 +1099,7 @@ mod tests {
         tmp.i = 0x521;
         tmp.vregs[0x5] = 153;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x33]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(1, tmp.mem[0x521]);
         assert_eq!(5, tmp.mem[0x522]);
         assert_eq!(3, tmp.mem[0x523]);
@@ -1106,7 +1109,7 @@ mod tests {
         tmp.i = 0x521;
         tmp.vregs[0x5] = 003;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x33]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0, tmp.mem[0x521]);
         assert_eq!(0, tmp.mem[0x522]);
         assert_eq!(3, tmp.mem[0x523]);
@@ -1116,7 +1119,7 @@ mod tests {
         tmp.i = 0x521;
         tmp.vregs[0x5] = 255;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x33]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(2, tmp.mem[0x521]);
         assert_eq!(5, tmp.mem[0x522]);
         assert_eq!(5, tmp.mem[0x523]);
@@ -1126,7 +1129,7 @@ mod tests {
         tmp.i = 0x521;
         tmp.vregs[0x5] = 32;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x33]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(0, tmp.mem[0x521]);
         assert_eq!(3, tmp.mem[0x522]);
         assert_eq!(2, tmp.mem[0x523]);
@@ -1138,13 +1141,13 @@ mod tests {
         let mut tmp = Chip8State::new();
         tmp.vregs[0x5] = 0x0;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x29]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(FONT_START, tmp.i);
 
         let mut tmp = Chip8State::new();
         tmp.vregs[0x5] = 0xa;
         tmp.load_program(&Chip8Program::new(&[0xf5, 0x29]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(FONT_START + 5 * 0xa, tmp.i);
     }
 
@@ -1155,7 +1158,7 @@ mod tests {
             tmp.mem[i as usize] = 0b10101010;
         }
         tmp.load_program(&Chip8Program::new(&[0x00, 0xe0]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         for i in 0xf00..0xfff + 1 {
             assert_eq!(tmp.mem[i as usize], 0x00);
         }
@@ -1167,7 +1170,7 @@ mod tests {
         assert_eq!(tmp.sound, 0x00);
         tmp.vregs[0xb] = 0x32;
         tmp.load_program(&Chip8Program::new(&[0xfb, 0x18]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.sound, 0x32);
     }
 
@@ -1177,7 +1180,7 @@ mod tests {
         assert_eq!(tmp.pc, 0x200);
         assert_eq!(tmp.sp, 0);
         tmp.load_program(&Chip8Program::new(&[0x24, 0x56]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.pc, 0x456);
         assert_eq!(tmp.sp, 1);
         assert_eq!(tmp.mem[STACK_START as usize], 0x02);
@@ -1188,7 +1191,7 @@ mod tests {
         assert_eq!(tmp.sp, 0);
         tmp.load_program(&Chip8Program::new(&[0x00, 0x00, 0x24, 0x56]));
         tmp.pc += 2;
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.pc, 0x456);
         assert_eq!(tmp.sp, 1);
         assert_eq!(tmp.mem[STACK_START as usize], 0x02);
@@ -1198,12 +1201,12 @@ mod tests {
         assert_eq!(tmp.pc, 0x200);
         assert_eq!(tmp.sp, 0);
         tmp.load_program(&Chip8Program::new(&[0x22, 0x02, 0x22, 0x34]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.pc, 0x202);
         assert_eq!(tmp.sp, 1);
         assert_eq!(tmp.mem[STACK_START as usize], 0x02);
         assert_eq!(tmp.mem[STACK_START as usize + 1], 0x00);
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.pc, 0x0234);
         assert_eq!(tmp.sp, 2);
         assert_eq!(tmp.mem[STACK_START as usize + 2], 0x02);
@@ -1217,7 +1220,7 @@ mod tests {
         tmp.mem[STACK_START as usize + 1] = 0x67;
         tmp.sp = 1;
         tmp.load_program(&Chip8Program::new(&[0x00, 0xee]));
-        tmp.exec_step();
+        tmp.exec_step(fake_getchar);
         assert_eq!(tmp.pc, 0x0567);
         assert_eq!(tmp.sp, 0);
     }
