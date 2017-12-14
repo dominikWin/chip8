@@ -48,6 +48,7 @@ pub fn update_display(state: &Chip8State) {
 pub fn get_char() -> u8 {
     loop {
         let key = getch() as u32;
+        refresh();
         let c = from_u32(key);
         if c.is_none() { continue; }
         let c = c.unwrap();
