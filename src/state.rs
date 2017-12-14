@@ -185,7 +185,7 @@ impl Chip8State {
         Opcode::new(instruction)
     }
 
-    pub fn exec_step(&mut self) {
+    pub fn exec_step(&mut self, get_char_fn: fn () -> u8) {
         let opcode = self.get_next_opcode();
         if let None = opcode {
             panic!("Failed to decode instruction {:x}", self.pc);
@@ -328,7 +328,9 @@ impl Chip8State {
                 let delay = self.delay;
                 self.set_vreg_val(&x, delay);
             }
-            Opcode::GKEY(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::GKEY(x) => {
+                self.set_vreg_val(&x, get_char_fn());
+            }
             Opcode::SDELAY(x) => {
                 let delay = self.vreg_val(&x);
                 self.delay = delay;

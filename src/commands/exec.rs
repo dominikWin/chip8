@@ -28,7 +28,7 @@ pub fn cmd_exec(matches: &ArgMatches) {
 
     loop {
         display::update_display(&state);
-        state.exec_step();
+        state.exec_step(display::get_char);
     }
 
     display::close_display();

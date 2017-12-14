@@ -1,5 +1,6 @@
 use ncurses::*;
 use state::Chip8State;
+use std::char::from_u32;
 
 const WIDTH: u8 = 64;
 const HEIGHT: u8 = 32;
@@ -42,6 +43,22 @@ pub fn update_display(state: &Chip8State) {
     }
 
     refresh();
+}
+
+pub fn get_char() -> u8 {
+    loop {
+        let key = getch() as u32;
+        let c = from_u32(key);
+        if c.is_none() { continue; }
+        let c = c.unwrap();
+        if c >= '0' && c <= '9' {
+            return (c as u8) - '0' as u8;
+        }
+        let c = c.to_ascii_lowercase();
+        if c >= 'a' && c <= 'f' {
+            return (c as u8) - 'a' as u8;
+        }
+    }
 }
 
 pub fn close_display() {
