@@ -5,6 +5,7 @@ use opcode::Opcode;
 use register::*;
 use rand;
 use rand::Rng;
+use chrono::prelude::*;
 
 #[cfg(test)]
 use test::Bencher;
@@ -20,6 +21,8 @@ pub struct Chip8State {
     pub pc: u16,
     pub delay: u8,
     pub sound: u8,
+    timer_start: DateTime<Local>,
+    pub timer_updates: u64,
     pub mem: [u8; 0x1000],
 }
 
@@ -32,6 +35,8 @@ impl Chip8State {
             pc: 0x0200,
             delay: 0,
             sound: 0,
+            timer_start: Local::now(),
+            timer_updates: 0,
             mem: [0; 0x1000],
         };
         state.load_font();
@@ -186,6 +191,7 @@ impl Chip8State {
     }
 
     pub fn exec_step(&mut self, get_char_fn: fn () -> u8) {
+        self.update_timers();
         let opcode = self.get_next_opcode();
         if let None = opcode {
             panic!("Failed to decode instruction {:x}", self.pc);
@@ -382,6 +388,24 @@ impl Chip8State {
         }
         if !skip_inc_pc {
             self.pc += 2;
+        }
+    }
+
+    pub fn update_timers(&mut self) {
+        let now = Local::now();
+        let duration = now.signed_duration_since(self.timer_start);
+        let ms = duration.num_milliseconds() as u64;
+        let expected_updates = (ms * 60) / 1000;
+        let updates_to_makeup = expected_updates - self.timer_updates;
+        for _ in 0..updates_to_makeup {
+            self.timer_updates += 1;
+
+            if self.sound > 0 {
+                self.sound -= 1;
+            }
+            if self.delay > 0 {
+                self.delay -= 0;
+            }
         }
     }
 

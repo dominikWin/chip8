@@ -41,6 +41,7 @@ pub fn update_display(state: &Chip8State) {
                                     r + 2, state.vregs[(r + 2) as usize],
                                     r + 3, state.vregs[(r + 3) as usize]).as_ref());
     }
+    mvprintw(38, 0, format!("DELAY: {}, SOUND: {}, UPDATES: {}", state.delay, state.sound, state.timer_updates).as_ref());
 
     refresh();
 }

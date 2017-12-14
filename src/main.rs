@@ -7,6 +7,7 @@ extern crate log;
 extern crate env_logger;
 extern crate rand;
 extern crate ncurses;
+extern crate chrono;
 
 use clap::{Arg, App, SubCommand};
 
