@@ -2,10 +2,9 @@ use program::Chip8Program;
 use std::fmt;
 use std::cmp;
 use opcode::Opcode;
-use register::VReg;
+use register::*;
 use rand;
 use rand::Rng;
-use std::ops::Add;
 
 #[cfg(test)]
 use test::Bencher;
@@ -196,12 +195,12 @@ impl Chip8State {
         match opcode {
             Opcode::CLS => for i in DISP_START..0xFFF + 1 {
                 self.mem[i as usize] = 0x00;
-            },
+            }
             Opcode::RET => {
                 let pc = self.stack_pop();
                 self.pc = pc;
                 skip_inc_pc = true;
-            },
+            }
             Opcode::JMP(n) => {
                 self.pc = n;
                 skip_inc_pc = true;
@@ -211,7 +210,7 @@ impl Chip8State {
                 self.stack_push(pc);
                 self.pc = n;
                 skip_inc_pc = true;
-            },
+            }
             Opcode::SKIPEQ(x, n) => {
                 if self.vreg_val(&x) == n {
                     self.pc += 4;
@@ -309,7 +308,20 @@ impl Chip8State {
             Opcode::RAND(x, n) => {
                 self.set_vreg_val(&x, random(n));
             }
-            Opcode::DRAW(_, _, _) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::DRAW(x, y, n) => {
+                for height in 0..n {
+                    let mut row: u8 = self.mem[(self.i + height as u16) as usize];
+                    for width in 0..8 {
+                        let val: bool = row & (1 << 7) != 0;
+                        row = row << 1;
+                        let x = self.vreg_val(&x) + width;
+                        let y = self.vreg_val(&y) + height;
+                        if x < 64 && y < 32 {
+                            self.write_pixel(x, y, val);
+                        }
+                    }
+                }
+            }
             Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::SKIPKNEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::GDELAY(x) => {
@@ -324,7 +336,7 @@ impl Chip8State {
             Opcode::SSND(x) => {
                 let snd = self.vreg_val(&x);
                 self.sound = snd;
-            },
+            }
             Opcode::ADDI(x) => {
                 let sum = self.i + self.vreg_val(&x) as u16;
                 self.i = sum;
@@ -360,7 +372,6 @@ impl Chip8State {
             self.pc += 2;
         }
     }
-
 
 
     fn vreg_val(&self, vreg: &VReg) -> u8 {
@@ -401,6 +412,17 @@ impl Chip8State {
     pub fn pixel_on(&self, x: u8, y: u8) -> bool {
         let (addr, mask) = Chip8State::decode_pixel(x, y);
         self.mem[addr as usize] & mask != 0
+    }
+
+    fn write_pixel(&mut self, x: u8, y: u8, val: bool) -> bool {
+        let (addr, mask) = Chip8State::decode_pixel(x, y);
+        let current = self.mem[addr as usize] & mask != 0;
+
+        if current != val {
+            self.mem[addr as usize] = (self.mem[addr as usize] & !mask) | (mask & if val { 0xff } else { 0 });
+        }
+
+        !(current && !val)
     }
 }
 

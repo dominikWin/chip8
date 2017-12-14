@@ -1,6 +1,5 @@
 use clap::ArgMatches;
 use util::*;
-use program::Chip8Program;
 use display;
 use state::Chip8State;
 

@@ -1,7 +1,6 @@
 use clap::ArgMatches;
 use util::*;
 use opcode::Opcode;
-use program::Chip8Program;
 
 pub fn cmd_decompile(matches: &ArgMatches) {
     let program = program_from_jnput(matches);
