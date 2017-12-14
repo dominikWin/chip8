@@ -322,7 +322,12 @@ impl Chip8State {
                     }
                 }
             }
-            Opcode::SKIPKEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
+            Opcode::SKIPKEQ(x) => {
+                if self.vreg_val(&x) == get_char_fn() {
+                    self.pc += 4;
+                    skip_inc_pc = true;
+                }
+            }
             Opcode::SKIPKNEQ(_) => panic!("Call to non-implemented instruction {:?}", opcode),
             Opcode::GDELAY(x) => {
                 let delay = self.delay;
