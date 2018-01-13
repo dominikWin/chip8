@@ -404,7 +404,7 @@ impl Chip8State {
                 self.sound -= 1;
             }
             if self.delay > 0 {
-                self.delay -= 0;
+                self.delay -= 1;
             }
         }
     }
